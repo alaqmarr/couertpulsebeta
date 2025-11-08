@@ -135,6 +135,7 @@ export default async function TeamPage({
                         <Suspense fallback={<LoadingCard title="Computing Team Stats..." />}>
                             <TeamLeaderboard teamId={team.id} />
                         </Suspense>
+                        
 
                         {/* ---------------- SUMMARY ---------------- */}
                         <section>

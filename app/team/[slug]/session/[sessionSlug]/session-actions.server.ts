@@ -5,7 +5,7 @@ import { getOrCreateUser } from "@/lib/clerk";
 import { revalidatePath } from "next/cache";
 
 /* =========================================================
-   CREATE GAME - Now accepts team assignments from UI
+   CREATE GAME (UI-Controlled Teams)
    ========================================================= */
 export async function createGameAction(
   teamSlug: string,
@@ -21,39 +21,28 @@ export async function createGameAction(
     where: { slug: sessionSlug },
     include: {
       team: true,
-      participants: {
-        where: { isSelected: true },
-        include: { member: true },
-      },
+      participants: { where: { isSelected: true }, include: { member: true } },
     },
   });
-  
+
   if (!session) throw new Error("Session not found");
   if (session.team.ownerId !== user.id)
     throw new Error("Only the team owner can create games.");
 
-  // Validate team sizes
-  if (matchType === "SINGLES") {
-    if (teamAEmails.length !== 1 || teamBEmails.length !== 1) {
-      throw new Error("Singles matches require exactly 1 player per team.");
-    }
-  } else {
-    if (teamAEmails.length !== 2 || teamBEmails.length !== 2) {
-      throw new Error("Doubles matches require exactly 2 players per team.");
-    }
+  // Validation
+  const required = matchType === "SINGLES" ? 1 : 2;
+  if (
+    teamAEmails.length !== required ||
+    teamBEmails.length !== required ||
+    teamAEmails.some((p) => teamBEmails.includes(p))
+  ) {
+    throw new Error("Invalid team configuration.");
   }
 
-  // Ensure no overlap between teams
-  if (teamAEmails.some((p) => teamBEmails.includes(p))) {
-    throw new Error("A player cannot appear on both teams.");
-  }
-
-  // Verify all players are selected
-  const selectedEmails = session.participants.map((p) => p.member.email);
-  const allPlayers = [...teamAEmails, ...teamBEmails];
-  if (!allPlayers.every((email) => selectedEmails.includes(email))) {
+  const selected = session.participants.map((p) => p.member.email);
+  const all = [...teamAEmails, ...teamBEmails];
+  if (!all.every((e) => selected.includes(e)))
     throw new Error("All players must be marked as available.");
-  }
 
   await prisma.game.create({
     data: {
@@ -82,34 +71,24 @@ export async function randomizeTeamsAction(
     where: { slug: sessionSlug },
     include: {
       team: true,
-      participants: {
-        where: { isSelected: true },
-        include: { member: true },
-      },
+      participants: { where: { isSelected: true }, include: { member: true } },
     },
   });
-  
   if (!session) throw new Error("Session not found");
   if (session.team.ownerId !== user.id)
     throw new Error("Only the team owner can randomize.");
 
-  const availablePlayers = session.participants.map((p) => p.member.email);
-  
-  const requiredPlayers = matchType === "SINGLES" ? 2 : 4;
-  if (availablePlayers.length < requiredPlayers) {
-    throw new Error(`Not enough selected players. Need ${requiredPlayers}, have ${availablePlayers.length}.`);
-  }
+  const players = session.participants.map((p) => p.member.email);
+  const required = matchType === "SINGLES" ? 2 : 4;
+  if (players.length < required)
+    throw new Error(`Need ${required} players, have ${players.length}.`);
 
-  // Shuffle all available players
-  const shuffled = [...availablePlayers].sort(() => Math.random() - 0.5);
+  const shuffled = [...players].sort(() => Math.random() - 0.5);
 
-  const teamAPlayers = matchType === "SINGLES" 
-    ? [shuffled[0]] 
-    : shuffled.slice(0, 2);
-    
-  const teamBPlayers = matchType === "SINGLES"
-    ? [shuffled[1]]
-    : shuffled.slice(2, 4);
+  const teamAPlayers =
+    matchType === "SINGLES" ? [shuffled[0]] : shuffled.slice(0, 2);
+  const teamBPlayers =
+    matchType === "SINGLES" ? [shuffled[1]] : shuffled.slice(2, 4);
 
   await prisma.game.create({
     data: {
@@ -124,7 +103,7 @@ export async function randomizeTeamsAction(
 }
 
 /* =========================================================
-   SET WINNER
+   SET WINNER + Update Pair Stats
    ========================================================= */
 export async function setGameWinnerAction(
   teamSlug: string,
@@ -139,16 +118,54 @@ export async function setGameWinnerAction(
     where: { slug: gameSlug },
     include: { session: { include: { team: true } } },
   });
-  
+
   if (!game) throw new Error("Game not found.");
   if (game.session.team.ownerId !== user.id)
     throw new Error("Only the team owner can mark results.");
   if (game.winner) throw new Error("Winner already set.");
 
-  await prisma.game.update({
+  const updated = await prisma.game.update({
     where: { slug: gameSlug },
     data: { winner },
+    include: { session: true },
   });
+
+  const teamId = updated.session.teamId;
+
+  // =========================================================
+  // UPDATE PAIR STATS (Only for doubles)
+  // =========================================================
+  async function updatePairStats(pairEmails: string[], didWin: boolean) {
+    if (pairEmails.length !== 2) return;
+
+    const [a, b] = pairEmails.sort();
+    const pair = await prisma.pairStat.upsert({
+      where: { teamId_playerA_playerB: { teamId, playerA: a, playerB: b } },
+      update: {
+        plays: { increment: 1 },
+        wins: { increment: didWin ? 1 : 0 },
+      },
+      create: {
+        teamId,
+        playerA: a,
+        playerB: b,
+        plays: 1,
+        wins: didWin ? 1 : 0,
+      },
+    });
+    return pair;
+  }
+
+  if (updated.teamAPlayers.length === 2)
+    await updatePairStats(
+      updated.teamAPlayers,
+      updated.winner === "A"
+    );
+  if (updated.teamBPlayers.length === 2)
+    await updatePairStats(
+      updated.teamBPlayers,
+      updated.winner === "B"
+    );
 
   revalidatePath(`/team/${teamSlug}/session/${sessionSlug}`);
 }
@@ -167,7 +184,6 @@ export async function togglePlayerAvailabilityAction(
     where: { slug: sessionSlug },
     include: { team: true },
   });
-  
   if (!session) throw new Error("Session not found");
   if (session.team.ownerId !== user.id)
     throw new Error("Only the owner can edit availability.");
@@ -214,37 +230,38 @@ export async function getSessionLeaderboard(sessionId: string) {
     const allPlayers = [...g.teamAPlayers, ...g.teamBPlayers];
     for (const p of allPlayers) {
       const stat = tally.get(p) || { plays: 0, wins: 0 };
-      stat.plays += 1;
+      stat.plays++;
       if (
         (g.winner === "A" && g.teamAPlayers.includes(p)) ||
         (g.winner === "B" && g.teamBPlayers.includes(p))
-      ) {
-        stat.wins += 1;
-      }
+      )
+        stat.wins++;
       tally.set(p, stat);
     }
   }
 
   const members = session.team.members;
 
-  const leaderboard = Array.from(tally.entries()).map(([email, s]) => {
-    const member = members.find((m) => m.email === email);
-    const name =
-      member?.displayName || member?.user?.name || email.split("@")[0];
-    const losses = s.plays - s.wins;
-    const winRate = s.plays > 0 ? (s.wins / s.plays) * 100 : 0;
-
-    return {
-      id: member?.id ?? email,
-      name,
-      plays: s.plays,
-      wins: s.wins,
-      losses,
-      winRate,
-    };
-  });
-
-  return leaderboard.sort(
-    (a, b) => b.winRate - a.winRate || b.wins - a.wins || a.name.localeCompare(b.name)
-  );
+  return Array.from(tally.entries())
+    .map(([email, s]) => {
+      const member = members.find((m) => m.email === email);
+      const name =
+        member?.displayName || member?.user?.name || email.split("@")[0];
+      const losses = s.plays - s.wins;
+      const winRate = s.plays > 0 ? (s.wins / s.plays) * 100 : 0;
+      return {
+        id: member?.id ?? email,
+        name,
+        plays: s.plays,
+        wins: s.wins,
+        losses,
+        winRate,
+      };
+    })
+    .sort(
+      (a, b) =>
+        b.winRate - a.winRate ||
+        b.wins - a.wins ||
+        a.name.localeCompare(b.name)
+    );
 }
