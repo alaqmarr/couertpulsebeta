@@ -3,9 +3,9 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   req: Request,
-  { params }: { params: { teamId: string } }
+  { params }: { params: Promise<{ teamId: string }> }
 ) {
-  const { teamId } = params;
+  const { teamId } = await params;
 
   const sessions = await prisma.session.findMany({
     where: { teamId },
