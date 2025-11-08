@@ -45,7 +45,7 @@ const DATA = {
     social: {
       whatsapp: {
         name: "WhatsApp",
-        url: "https://wa.me/9618443558",
+        url: "https://wa.me/+919618443558",
         icon: Icons.whatsapp,
       },
       email: {
