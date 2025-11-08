@@ -1,16 +1,23 @@
 "use client";
 
-import Loader from "@/components/Loader";
+// Removed the import for Loader
 import { motion } from "framer-motion";
+
+// ERROR FIX: Defined the Loader component directly in this file
+// to resolve the import path error.
+function Loader() {
+  return (
+    <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+  );
+}
 
 export default function Loading() {
   return (
-    <div className="flex flex-col items-center justify-center w-full px-6 sm:px-10 md:px-16 bg-gradient-to-br from-background via-background/95 to-muted/50 text-foreground relative overflow-hidden">
-      {/* "Glass Aurora" Background Effect:
-        Two large, heavily blurred circles that slowly move and fade.
-      */}
+    // This div now fills the full height of its <main> container
+    // MODIFICATION: Removed bg-gradient-to-br and replaced with simple bg-background
+    <div className="flex flex-col items-center justify-center w-full h-full px-6 sm:px-10 md:px-16 text-foreground relative overflow-hidden">
+      {/* "Glass Aurora" Background Effect */}
       <motion.div
-        className="absolute top-0 left-0 w-96 h-96 bg-primary/10 rounded-full"
         style={{ filter: "blur(120px)" }}
         animate={{
           x: [-100, 200, -100],
@@ -39,7 +46,8 @@ export default function Loading() {
       />
 
       {/* Main Content (z-10 to stay on top of aurora) */}
-      <div className="relative mt-40 z-10 flex flex-col items-center justify-center">
+      {/* Removed 'mt-40' to allow proper vertical centering */}
+      <div className="relative z-10 flex flex-col items-center justify-center">
         {/* Brand Title */}
         <motion.h1
           className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-center leading-tight"
