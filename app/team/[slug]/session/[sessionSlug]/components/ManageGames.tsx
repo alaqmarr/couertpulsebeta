@@ -55,14 +55,18 @@ export default function ManageGames({
   const [selectedIds, setSelectedIds] = useState<string[]>(initiallySelected);
   const members = session.team.members;
 
-  // Local teams for quick game setup
+  // Local teams for manual game setup - now store emails instead of IDs
   const [teamA, setTeamA] = useState<string[]>([]);
   const [teamB, setTeamB] = useState<string[]>([]);
 
   const playerCount = selectedIds.length;
   const totalTeamPlayers = teamA.length + teamB.length;
+  
+  // Determine match type based on team composition
   const matchType =
-    totalTeamPlayers < 4 && totalTeamPlayers >= 2 ? "SINGLES" : "DOUBLES";
+    totalTeamPlayers === 2 && teamA.length === 1 && teamB.length === 1
+      ? "SINGLES"
+      : "DOUBLES";
 
   /* =========================================================
      UTILITIES
@@ -83,10 +87,19 @@ export default function ManageGames({
      TOGGLE SESSION AVAILABILITY
   ========================================================= */
   const handleToggleAvailability = (memberId: string) => {
+    const member = getMemberById(memberId);
+    if (!member) return;
+
     const newSelected = selectedIds.includes(memberId)
       ? selectedIds.filter((id) => id !== memberId)
       : [...selectedIds, memberId];
     setSelectedIds(newSelected);
+
+    // Remove from teams if being deselected
+    if (selectedIds.includes(memberId)) {
+      setTeamA((prev) => prev.filter((e) => e !== member.email));
+      setTeamB((prev) => prev.filter((e) => e !== member.email));
+    }
 
     startTransition(async () => {
       try {
@@ -107,12 +120,16 @@ export default function ManageGames({
 
     const email = member.email;
     if (team === "A") {
+      // Remove from team B first
       setTeamB((b) => b.filter((e) => e !== email));
+      // Toggle in team A
       setTeamA((a) =>
         a.includes(email) ? a.filter((e) => e !== email) : [...a, email]
       );
     } else {
+      // Remove from team A first
       setTeamA((a) => a.filter((e) => e !== email));
+      // Toggle in team B
       setTeamB((b) =>
         b.includes(email) ? b.filter((e) => e !== email) : [...b, email]
       );
@@ -120,7 +137,7 @@ export default function ManageGames({
   };
 
   /* =========================================================
-     CREATE GAME
+     CREATE GAME - Now passes team assignments to server
   ========================================================= */
   const handleCreateGame = () => {
     if (teamA.length < 1 || teamB.length < 1) {
@@ -128,9 +145,17 @@ export default function ManageGames({
       return;
     }
 
+    const expectedSize = matchType === "SINGLES" ? 1 : 2;
+    if (teamA.length !== expectedSize || teamB.length !== expectedSize) {
+      toast.error(
+        `${matchType} matches require ${expectedSize} player(s) per team.`
+      );
+      return;
+    }
+
     startTransition(async () => {
       try {
-        await createGameAction(teamSlug, sessionSlug, matchType);
+        await createGameAction(teamSlug, sessionSlug, matchType, teamA, teamB);
         toast.success(`Game created (${matchType.toLowerCase()})`);
         setTeamA([]);
         setTeamB([]);
@@ -144,8 +169,9 @@ export default function ManageGames({
      RANDOMIZE TEAMS
   ========================================================= */
   const handleRandomizeTeams = async () => {
-    if (playerCount < 2) {
-      toast.error("At least two available players required.");
+    const required = matchType === "SINGLES" ? 2 : 4;
+    if (playerCount < required) {
+      toast.error(`At least ${required} available players required for ${matchType}.`);
       return;
     }
 
@@ -190,7 +216,9 @@ export default function ManageGames({
         {/* ================= PLAYER AVAILABILITY ================= */}
         {isOwner && (
           <div>
-            <p className="text-sm font-medium mb-2">Session Availability</p>
+            <p className="text-sm font-medium mb-2">
+              Session Availability ({selectedIds.length} selected)
+            </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {members.map((m) => {
                 const isSelected = selectedIds.includes(m.id);
@@ -211,37 +239,40 @@ export default function ManageGames({
         )}
 
         {/* ================= TEAM ASSIGNMENT ================= */}
-        {isOwner && (
+        {isOwner && selectedIds.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {["A", "B"].map((team) => (
-              <div key={team}>
-                <p className="text-sm font-medium mb-2">Team {team}</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {members
-                    .filter((m) => selectedIds.includes(m.id))
-                    .map((m) => {
-                      const inA = teamA.includes(m.email);
-                      const inB = teamB.includes(m.email);
-                      const selected = team === "A" ? inA : inB;
-                      const disabled =
-                        team === "A" ? inB : inA; // prevent duplicates
-                      return (
-                        <Button
-                          key={m.id}
-                          variant={selected ? "default" : "outline"}
-                          onClick={() => handleAssignPlayer(team as "A" | "B", m.id)}
-                          disabled={disabled || isPending}
-                          className={`justify-start ${
-                            disabled ? "opacity-50 cursor-not-allowed" : ""
-                          }`}
-                        >
-                          {getPlayerName(m.email)}
-                        </Button>
-                      );
-                    })}
+            {["A", "B"].map((team) => {
+              const currentTeam = team === "A" ? teamA : teamB;
+              return (
+                <div key={team}>
+                  <p className="text-sm font-medium mb-2">
+                    Team {team} ({currentTeam.length} player{currentTeam.length !== 1 ? 's' : ''})
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {members
+                      .filter((m) => selectedIds.includes(m.id))
+                      .map((m) => {
+                        const inA = teamA.includes(m.email);
+                        const inB = teamB.includes(m.email);
+                        const selected = team === "A" ? inA : inB;
+                        return (
+                          <Button
+                            key={m.id}
+                            variant={selected ? "default" : "outline"}
+                            onClick={() =>
+                              handleAssignPlayer(team as "A" | "B", m.id)
+                            }
+                            disabled={isPending}
+                            className="justify-start"
+                          >
+                            {getPlayerName(m.email)}
+                          </Button>
+                        );
+                      })}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -271,7 +302,7 @@ export default function ManageGames({
               ) : (
                 <>
                   <PlusCircle className="w-4 h-4 mr-1" />
-                  Create Game
+                  Create {matchType} Game
                 </>
               )}
             </Button>
@@ -308,6 +339,7 @@ export default function ManageGames({
                       size="sm"
                       variant="outline"
                       onClick={() => handleSetWinner(g.slug, "A")}
+                      disabled={isPending}
                     >
                       Team A
                     </Button>
@@ -315,6 +347,7 @@ export default function ManageGames({
                       size="sm"
                       variant="outline"
                       onClick={() => handleSetWinner(g.slug, "B")}
+                      disabled={isPending}
                     >
                       Team B
                     </Button>
