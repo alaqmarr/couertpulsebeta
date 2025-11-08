@@ -8,7 +8,11 @@ import { revalidatePath } from "next/cache";
    ADD TEAM MEMBER
    ========================================================= */
 
-export async function addMemberAction(slug: string, email: string, name: string) {
+export async function addMemberAction(
+  slug: string,
+  email: string,
+  name: string
+) {
   const currentUser = await getOrCreateUser();
   if (!currentUser) throw new Error("Unauthorized");
 
@@ -24,7 +28,9 @@ export async function addMemberAction(slug: string, email: string, name: string)
   if (existingMember) throw new Error("Member already exists.");
 
   const normalizedEmail = email.toLowerCase();
-  let linkedUser = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+  let linkedUser = await prisma.user.findUnique({
+    where: { email: normalizedEmail },
+  });
 
   if (!linkedUser) {
     linkedUser = await prisma.user.create({

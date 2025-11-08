@@ -2,13 +2,48 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
+
+// UI Components
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { toast } from "react-hot-toast";
-import { Loader2, CalendarPlus } from "lucide-react";
-import { createSessionAction, deleteSessionAction } from "../team-actions.server";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import {
+    Dialog,
+    DialogTrigger,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+    DialogClose,
+} from "@/components/ui/dialog";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
+// Icons
+import { Loader2, CalendarPlus, Calendar, Info, Trash } from "lucide-react";
+import { createSessionAction, deleteSessionAction } from "../team-actions.server";
+
+// Type definition for a single session (improves type safety)
+type Session = {
+    id: string;
+    name: string | null;
+    date: Date;
+    slug: string | null;
+    games: { id: string; winner: string | null }[];
+};
 
 export default function SessionList({
     team,
@@ -16,47 +51,21 @@ export default function SessionList({
     team: {
         id: string;
         slug: string;
-        sessions: {
-            id: string;
-            name: string | null;
-            date: Date;
-            slug: string | null;
-            games: { id: string; winner: string | null }[];
-        }[];
+        sessions: Session[];
     };
 }) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
-    const [sessionName, setSessionName] = useState("");
+    const [sessionToDelete, setSessionToDelete] = useState<Session | null>(null);
 
-    async function handleCreateSession() {
-        if (!sessionName.trim()) {
-            toast.error("Please enter a session name.");
-            return;
-        }
+    async function handleDeleteSession() {
+        if (!sessionToDelete) return;
 
         startTransition(async () => {
             try {
-                // Create session → returns slug (we’ll modify the action to do that)
-                const result = await createSessionAction(team.slug, sessionName.trim());
-                if (!result?.slug) throw new Error("No session slug returned.");
-
-                toast.success("Session created successfully!");
-                setSessionName("");
-
-                // Navigate to the new session’s page
-                router.push(`/team/${team.slug}/session/${result.slug}`);
-            } catch (err: any) {
-                toast.error(err.message || "Failed to create session.");
-            }
-        });
-    }
-
-    async function handleDeleteSession(id: string) {
-        startTransition(async () => {
-            try {
-                await deleteSessionAction(team.slug, id);
+                await deleteSessionAction(team.slug, sessionToDelete.id);
                 toast.success("Session deleted.");
+                setSessionToDelete(null); // Close the dialog
             } catch (err: any) {
                 toast.error(err.message || "Error deleting session.");
             }
@@ -64,45 +73,35 @@ export default function SessionList({
     }
 
     return (
-        <Card>
+        <Card className="bg-card/70 backdrop-blur-sm border border-primary/10">
             <CardHeader>
                 <div className="flex items-center justify-between flex-wrap gap-3">
-                    <CardTitle>Sessions ({team.sessions.length})</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                        <Calendar size={18} />
+                        Sessions ({team.sessions.length})
+                    </CardTitle>
 
-                    <div className="flex gap-2">
-                        <Input
-                            placeholder="Enter session name"
-                            value={sessionName}
-                            onChange={(e) => setSessionName(e.target.value)}
-                            disabled={isPending}
-                            className="w-56"
-                        />
-                        <Button onClick={handleCreateSession} disabled={isPending}>
-                            {isPending ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                                <>
-                                    <CalendarPlus className="w-4 h-4 mr-1" />
-                                    Add
-                                </>
-                            )}
-                        </Button>
-                    </div>
+                    {/* --- Create Session Dialog --- */}
+                    <CreateSessionDialog team={team} />
                 </div>
             </CardHeader>
 
-            <Separator />
-
             <CardContent>
                 {team.sessions.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                        No sessions yet. Create one to start recording games.
-                    </p>
+                    <div className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed border-primary/20 rounded-lg bg-muted/50">
+                        <Info size={24} className="text-primary" />
+                        <p className="text-muted-foreground text-sm">
+                            No sessions yet. Create one to start recording games.
+                        </p>
+                    </div>
                 ) : (
-                    <ul className="divide-y divide-border">
-                        {team.sessions.map((s) => (
-                            <li key={s.id} className="py-3">
-                                <div className="flex items-center justify-between">
+                    <AlertDialog>
+                        <ul className="divide-y divide-border/50">
+                            {team.sessions.map((s) => (
+                                <li
+                                    key={s.id}
+                                    className="py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between"
+                                >
                                     <div>
                                         <p className="font-medium">{s.name || "Untitled Session"}</p>
                                         <p className="text-xs text-muted-foreground">
@@ -114,12 +113,12 @@ export default function SessionList({
                                             })}
                                         </p>
                                     </div>
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-xs text-muted-foreground">
+                                    <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                                        <span className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-md border">
                                             {s.games.length} games
                                         </span>
                                         <Button
-                                            variant="outline"
+                                            variant="secondary"
                                             size="sm"
                                             onClick={() =>
                                                 router.push(`/team/${team.slug}/session/${s.slug}`)
@@ -127,25 +126,143 @@ export default function SessionList({
                                         >
                                             Open
                                         </Button>
-                                        <Button
-                                            variant="destructive"
-                                            size="sm"
-                                            disabled={isPending}
-                                            onClick={() => handleDeleteSession(s.id)}
-                                        >
-                                            {isPending ? (
-                                                <Loader2 className="w-4 h-4 animate-spin" />
-                                            ) : (
-                                                "Delete"
-                                            )}
-                                        </Button>
+                                        <AlertDialogTrigger asChild>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-red-500 hover:text-red-400"
+                                                disabled={isPending}
+                                                onClick={() => setSessionToDelete(s)}
+                                            >
+                                                <Trash className="w-4 h-4" />
+                                            </Button>
+                                        </AlertDialogTrigger>
                                     </div>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
+                                </li>
+                            ))}
+                        </ul>
+
+                        {/* --- Delete Confirmation Dialog --- */}
+                        <AlertDialogContent className="bg-card/90 backdrop-blur-md border border-primary/20">
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This will permanently delete the session{" "}
+                                    <span className="font-semibold text-foreground">
+                                        {sessionToDelete?.name || "Untitled Session"}
+                                    </span>{" "}
+                                    and all its {sessionToDelete?.games.length} games.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel asChild>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setSessionToDelete(null)}
+                                        disabled={isPending}
+                                    >
+                                        Cancel
+                                    </Button>
+                                </AlertDialogCancel>
+                                <AlertDialogAction asChild>
+                                    <Button
+                                        variant="destructive"
+                                        onClick={handleDeleteSession}
+                                        disabled={isPending}
+                                    >
+                                        {isPending ? (
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                        ) : (
+                                            "Delete Session"
+                                        )}
+                                    </Button>
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                 )}
             </CardContent>
         </Card>
+    );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Create Session Dialog Component */
+/* -------------------------------------------------------------------------- */
+function CreateSessionDialog({
+    team,
+}: {
+    team: { id: string; slug: string };
+}) {
+    const router = useRouter();
+    const [isOpen, setIsOpen] = useState(false);
+    const [isPending, startTransition] = useTransition();
+    const [sessionName, setSessionName] = useState("");
+
+    async function handleCreateSession() {
+        if (!sessionName.trim()) {
+            toast.error("Please enter a session name.");
+            return;
+        }
+
+        startTransition(async () => {
+            try {
+                const result = await createSessionAction(team.slug, sessionName.trim());
+                if (!result?.slug) throw new Error("No session slug returned.");
+
+                toast.success("Session created successfully!");
+                setSessionName("");
+                setIsOpen(false); // Close dialog on success
+
+                router.push(`/team/${team.slug}/session/${result.slug}`);
+            } catch (err: any) {
+                toast.error(err.message || "Failed to create session.");
+            }
+        });
+    }
+
+    return (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+                <Button>
+                    <CalendarPlus className="w-4 h-4 mr-1.5" />
+                    Create Session
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-card/90 backdrop-blur-md border border-primary/20">
+                <DialogHeader>
+                    <DialogTitle>Create New Session</DialogTitle>
+                    <DialogDescription>
+                        Enter a name for your new session (e.g., "Tuesday Practice").
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="py-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="session-name">Session Name</Label>
+                        <Input
+                            id="session-name"
+                            placeholder="e.g., Tuesday Practice"
+                            value={sessionName}
+                            onChange={(e) => setSessionName(e.target.value)}
+                            disabled={isPending}
+                        />
+                    </div>
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button variant="outline" disabled={isPending}>
+                            Cancel
+                        </Button>
+                    </DialogClose>
+                    <Button onClick={handleCreateSession} disabled={isPending}>
+                        {isPending ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                            "Create and Open"
+                        )}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 }

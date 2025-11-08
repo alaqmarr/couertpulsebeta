@@ -61,7 +61,6 @@ export async function getSessionLeaderboard(sessionId: string) {
   return leaderboard;
 }
 
-
 export async function getTeamLeaderboard(teamId: string) {
   const team = await prisma.team.findUnique({
     where: { id: teamId },
@@ -108,4 +107,3 @@ export async function getTeamLeaderboard(teamId: string) {
     };
   });
 }
-

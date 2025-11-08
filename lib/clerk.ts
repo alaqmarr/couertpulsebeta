@@ -12,8 +12,7 @@ export async function getOrCreateUser() {
   const clerk = await currentUser();
   if (!clerk) return null;
 
-  const email =
-    clerk.emailAddresses?.[0]?.emailAddress?.toLowerCase() ?? null;
+  const email = clerk.emailAddresses?.[0]?.emailAddress?.toLowerCase() ?? null;
   if (!email) throw new Error("Missing email on Clerk user");
 
   // --- 1) Ensure ClerkUser record exists immediately ---
