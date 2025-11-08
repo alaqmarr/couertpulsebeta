@@ -47,7 +47,7 @@ export default function Loading() {
 
       {/* Main Content (z-10 to stay on top of aurora) */}
       {/* Removed 'mt-40' to allow proper vertical centering */}
-      <div className="relative z-10 flex flex-col items-center justify-center">
+      <div className="relative mt-40 z-10 flex flex-col items-center justify-center">
         {/* Brand Title */}
         <motion.h1
           className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-center leading-tight"
