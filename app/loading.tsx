@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 
 export default function Loading() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen w-full px-6 sm:px-10 md:px-16 bg-gradient-to-br from-background via-background/95 to-muted/50 text-foreground relative overflow-hidden">
+    <div className="flex flex-col items-center justify-center w-full px-6 sm:px-10 md:px-16 bg-gradient-to-br from-background via-background/95 to-muted/50 text-foreground relative overflow-hidden">
       {/* "Glass Aurora" Background Effect:
         Two large, heavily blurred circles that slowly move and fade.
       */}
@@ -39,7 +39,7 @@ export default function Loading() {
       />
 
       {/* Main Content (z-10 to stay on top of aurora) */}
-      <div className="relative z-10 flex flex-col items-center justify-center">
+      <div className="relative mt-40 z-10 flex flex-col items-center justify-center">
         {/* Brand Title */}
         <motion.h1
           className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-center leading-tight"
