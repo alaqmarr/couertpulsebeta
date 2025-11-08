@@ -1,10 +1,11 @@
 "use client";
 
+import Loader from "@/components/Loader";
 import { motion } from "framer-motion";
 
 export default function Loading() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen w-full px-6 sm:px-10 md:px-16 bg-gradient-to-br from-background via-background/95 to-muted/50 text-foreground relative overflow-hidden">
+    <div className="flex flex-col items-center justify-center min-h-screen w-full px-6 sm:px-10 md:px-16 bg-linear-to-br from-background via-background/95 to-muted/50 text-foreground relative overflow-hidden">
       {/* Animated background pulse */}
       <motion.div
         className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent"
@@ -36,23 +37,11 @@ export default function Loading() {
 
       {/* Progress bar */}
       <motion.div
-        className="mt-10 w-40 sm:w-56 md:w-72 h-1.5 bg-muted rounded-full overflow-hidden"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-      >
-        <motion.div
-          className="h-full bg-primary"
-          initial={{ width: "0%" }}
-          animate={{ width: ["0%", "40%", "70%", "100%"] }}
-          transition={{
-            duration: 2.8,
-            repeat: Infinity,
-            repeatDelay: 0.4,
-            ease: "easeInOut",
-          }}
-        />
-      </motion.div>
+          className="mt-6 w-48 h-1 bg-muted/30 rounded-full overflow-hidden relative"
+          initial={{ opacity: 0 }}
+        >
+          <Loader />
+        </motion.div>
 
       {/* Footer */}
       <motion.p
