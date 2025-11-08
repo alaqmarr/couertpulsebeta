@@ -245,6 +245,7 @@ export default async function DashboardPage() {
           </div>
         </section>
 
+
         {/* USER STATS */}
         <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard title="Total Points" value={totalPoints} icon={<Star className="text-yellow-500" />} />
@@ -332,8 +333,8 @@ export default async function DashboardPage() {
                         <CardTitle className="text-lg">{t.name}</CardTitle>
                         <span
                           className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${t.isActive
-                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 border-green-200 dark:border-green-700"
-                              : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-700"
+                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 border-green-200 dark:border-green-700"
+                            : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-700"
                             }`}
                         >
                           {t.isActive ? "Active" : "Completed"}

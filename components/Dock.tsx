@@ -62,10 +62,13 @@ export function DockDemo() {
         <TooltipProvider>
             <div
                 className="fixed bottom-3 left-1/2 -translate-x-1/2 z-50
-                   flex items-center justify-center w-full pointer-events-none"
+                    flex items-center justify-center w-full pointer-events-none"
             >
                 <div className="pointer-events-auto">
-                    <Dock direction="middle">
+                    <Dock
+                        direction="middle"
+                        className="bg-[rgba(52,182,25,0.7)]"
+                    >
                         {DATA.navbar.map((item) => (
                             <DockIcon key={item.label}>
                                 <Tooltip>

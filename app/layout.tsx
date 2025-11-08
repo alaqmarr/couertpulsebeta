@@ -3,10 +3,12 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "react-hot-toast";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
-import { getOrCreateUser } from "@/lib/clerk";
+
+// Import the new layout components
+import MainHeader from "@/components/layout/MainHeader";
+import MainFooter from "@/components/layout/MainFooter";
 import { DockDemo } from "@/components/Dock";
+import { getOrCreateUser } from "@/lib/clerk";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,18 +32,39 @@ export default async function RootLayout({
 }>) {
   const user = await getOrCreateUser();
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased 
+                   bg-gradient-to-br from-background via-muted/50 to-background text-foreground`}
       >
         <ClerkProvider>
-          <Toaster />
-          {children}
-          {
-            user && (
-              <DockDemo />
-            )
-          }
+          {/* Wrapper for sticky footer layout */}
+          <div className="flex flex-col min-h-screen">
+            
+            {/* --- Main Header --- */}
+            <MainHeader />
+
+            {/* --- Main Page Content --- */}
+            <main className="flex-grow">
+              {children}
+            </main>
+{/* App-wide UI (like the dock) */}
+          {user && (
+            <DockDemo />
+          )}
+            {/* --- Main Footer --- */}
+            <MainFooter />
+            
+          </div>
+
+          {/* Styled Toaster for glass effect */}
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              className:
+                "bg-card/90 backdrop-blur-md text-foreground border border-primary/20 shadow-lg",
+            }}
+          />
         </ClerkProvider>
       </body>
     </html>
