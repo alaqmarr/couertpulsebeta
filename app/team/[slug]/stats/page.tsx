@@ -176,5 +176,5 @@ function EmptyState({ text }: { text: string }) {
 
 async function getNamefromDb(email: string) {
     const user = await prisma.user.findUnique({ where: { email } });
-    return user?.name || email;
+    return user?.name || user?.displayName || email;
 }
