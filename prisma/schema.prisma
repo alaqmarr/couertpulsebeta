@@ -1,0 +1,399 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/**
+ * ============================================================
+ * ENUMS
+ * ============================================================
+ */
+
+enum PackageType {
+  FREE
+  TEAM_PACKAGE
+  TOURNAMENT_PACKAGE
+  PRO_PACKAGE
+}
+
+enum Role {
+  OWNER
+  MANAGER
+  MEMBER
+}
+
+enum WinningTeam {
+  A
+  B
+  DRAW
+}
+
+enum PaymentType {
+  TEAM_PURCHASE
+  TOURNAMENT_PURCHASE
+  PACKAGE_SUBSCRIPTION
+  MANUAL_CREDIT
+}
+
+enum ActivityType {
+  TEAM_CREATED
+  TOURNAMENT_CREATED
+  GAME_PLAYED
+  GAME_WON
+  MEMBER_ADDED
+  PAYMENT_MADE
+}
+
+/**
+ * ============================================================
+ * CLERK AUTH SCHEMA
+ * ============================================================
+ */
+
+/**
+ * ClerkUser is a direct mirror of authentication-level identities.
+ * These records come directly from Clerk, synced via webhooks or getOrCreateUser().
+ * It ensures that authentication data never interferes with application-level data.
+ */
+model ClerkUser {
+  id           String   @id @default(cuid())
+  clerkId      String   @unique
+  email        String   @unique
+  fullName     String?
+  imageUrl     String?
+  lastSyncedAt DateTime @default(now())
+
+  // Link to the main application user (1:1 relationship)
+  appUser User?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([clerkId])
+  @@index([email])
+}
+
+/**
+ * ============================================================
+ * CORE APPLICATION USER MODEL
+ * ============================================================
+ */
+
+/**
+ * User is the core application-level identity.
+ * All gameplay, teams, tournaments, and statistics are tied to this user.
+ * Authentication data from ClerkUser is linked but not dependent.
+ */
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String?
+  image       String?
+  displayName String?
+  createdAt   DateTime @default(now())
+
+  // Optional 1:1 link to ClerkUser
+  clerkUserId String?    @unique
+  clerkUser   ClerkUser? @relation(fields: [clerkUserId], references: [id])
+
+  // Player stats
+  points Int @default(0)
+  wins   Int @default(0)
+  losses Int @default(0)
+
+  // Package and usage
+  packageType     PackageType @default(FREE)
+  teamQuota       Int         @default(1)
+  tournamentQuota Int         @default(1)
+  teamCount       Int         @default(0)
+  tournamentCount Int         @default(0)
+  planExpiresAt   DateTime?
+
+  // Relations
+  teamsOwned       Team[]         @relation("ownerTeams")
+  tournamentsOwned Tournament[]   @relation("ownerTournaments")
+  memberships      TeamMember[]
+  payments         Payment[]
+  notifications    Notification[]
+  activities       Activity[]
+
+  @@index([email])
+  @@index([clerkUserId])
+}
+
+/**
+ * ============================================================
+ * TEAMS
+ * ============================================================
+ */
+
+model Team {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  ownerId   String
+  createdAt DateTime @default(now())
+
+  gamesPlayed Int @default(0)
+  gamesWon    Int @default(0)
+
+  owner           User             @relation("ownerTeams", fields: [ownerId], references: [id], onDelete: Cascade)
+  members         TeamMember[]
+  sessions        Session[]
+  pairStats       PairStat[]
+  tournamentTeams TournamentTeam[]
+  calendarEvents  CalendarEvent[]
+
+  @@index([ownerId])
+}
+
+model TeamMember {
+  id          String   @id @default(cuid())
+  teamId      String
+  userId      String?
+  displayName String?
+  email       String
+  role        Role     @default(MEMBER)
+  joinedAt    DateTime @default(now())
+
+  team                Team                 @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user                User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  sessionParticipants SessionParticipant[]
+
+  @@index([teamId])
+  @@index([userId])
+  @@index([email])
+}
+
+/**
+ * ============================================================
+ * TEAM SESSIONS & GAMES
+ * ============================================================
+ */
+
+model Session {
+  id           String               @id @default(cuid())
+  slug         String?              @unique @default(cuid())
+  teamId       String
+  name         String?
+  date         DateTime
+  createdAt    DateTime             @default(now())
+  participants SessionParticipant[]
+
+  team  Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  games Game[]
+
+  @@index([teamId])
+  @@index([date])
+}
+
+model SessionParticipant {
+  id         String  @id @default(cuid())
+  sessionId  String
+  memberId   String
+  isSelected Boolean @default(true)
+
+  session Session    @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  member  TeamMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, memberId])
+}
+
+model Game {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  sessionId    String
+  teamAPlayers String[]
+  teamBPlayers String[]
+  winner       String? // "A" | "B" | null
+  createdAt    DateTime @default(now())
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([createdAt])
+}
+
+/**
+ * ============================================================
+ * PAIR STATS
+ * ============================================================
+ */
+
+model PairStat {
+  id      String @id @default(cuid())
+  teamId  String
+  playerA String
+  playerB String
+  plays   Int    @default(0)
+  wins    Int    @default(0)
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, playerA, playerB])
+  @@index([teamId])
+}
+
+/**
+ * ============================================================
+ * TOURNAMENTS
+ * ============================================================
+ */
+
+model Tournament {
+  id                String   @id @default(cuid())
+  name              String
+  slug              String   @unique
+  ownerId           String
+  createdAt         DateTime @default(now())
+  isActive          Boolean  @default(true)
+  minGamesPerPlayer Int      @default(0)
+  bannerUrl         String?
+
+  owner           User             @relation("ownerTournaments", fields: [ownerId], references: [id], onDelete: Cascade)
+  stages          Stage[]
+  tournamentTeams TournamentTeam[]
+  games           TournamentGame[]
+  calendarEvents  CalendarEvent[]
+
+  @@index([ownerId])
+  @@index([slug])
+}
+
+model TournamentTeam {
+  id           String  @id @default(cuid())
+  tournamentId String
+  teamId       String
+  thumbnailUrl String?
+
+  tournament       Tournament       @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  team             Team             @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  tournamentGamesA TournamentGame[] @relation("TeamARef")
+  tournamentGamesB TournamentGame[] @relation("TeamBRef")
+
+  @@unique([tournamentId, teamId])
+  @@index([tournamentId])
+  @@index([teamId])
+}
+
+model TournamentGame {
+  id           String       @id @default(cuid())
+  tournamentId String
+  stageId      String?
+  teamAId      String
+  teamBId      String
+  teamAPlayers String[]
+  teamBPlayers String[]
+  winningTeam  WinningTeam?
+  scheduleTime DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime     @default(now())
+
+  tournament Tournament     @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  stage      Stage?         @relation(fields: [stageId], references: [id], onDelete: SetNull)
+  teamA      TournamentTeam @relation("TeamARef", fields: [teamAId], references: [id], onDelete: Restrict)
+  teamB      TournamentTeam @relation("TeamBRef", fields: [teamBId], references: [id], onDelete: Restrict)
+
+  @@index([tournamentId])
+  @@index([stageId])
+  @@index([teamAId])
+  @@index([teamBId])
+  @@index([scheduleTime])
+  @@index([completedAt])
+}
+
+model Stage {
+  id           String   @id @default(cuid())
+  tournamentId String
+  name         String
+  order        Int
+  createdAt    DateTime @default(now())
+
+  tournament Tournament       @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  games      TournamentGame[]
+
+  @@unique([tournamentId, order])
+  @@index([tournamentId])
+}
+
+/**
+ * ============================================================
+ * PAYMENTS & LOGGING
+ * ============================================================
+ */
+
+model Payment {
+  id          String      @id @default(cuid())
+  userId      String
+  type        PaymentType
+  amount      Decimal     @db.Decimal(10, 2)
+  currency    String      @default("INR")
+  referenceId String?
+  createdAt   DateTime    @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+/**
+ * ============================================================
+ * NOTIFICATIONS, ACTIVITY, CALENDAR
+ * ============================================================
+ */
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String   @db.Text
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+model Activity {
+  id        String       @id @default(cuid())
+  userId    String
+  type      ActivityType
+  refId     String?
+  message   String?      @db.Text
+  createdAt DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model CalendarEvent {
+  id           String    @id @default(cuid())
+  title        String
+  description  String?   @db.Text
+  startTime    DateTime
+  endTime      DateTime?
+  location     String?
+  tournamentId String?
+  teamId       String?
+  createdAt    DateTime  @default(now())
+
+  tournament Tournament? @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  team       Team?       @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@index([startTime])
+  @@index([tournamentId])
+  @@index([teamId])
+}
