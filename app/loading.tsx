@@ -55,8 +55,7 @@ export default function Loading() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <span className="text-primary">Court</span>
-          <span className="text-foreground">Pulse</span>
+          <img src="/logo.png" alt="CourtPulse Logo" className="w-50" />
         </motion.h1>
 
         {/* Tagline */}
@@ -82,7 +81,7 @@ export default function Loading() {
 
       {/* Footer */}
       <motion.p
-        className="absolute bottom-6 sm:bottom-8 text-[10px] sm:text-xs text-muted-foreground tracking-widest uppercase text-center w-full z-10"
+        className="mt-4 bottom-6 sm:bottom-8 text-[10px] sm:text-xs text-muted-foreground tracking-widest uppercase text-center w-full z-10"
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.8 }}
         transition={{ delay: 1.2 }}
