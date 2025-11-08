@@ -103,7 +103,7 @@ export default async function TeamStatsPage({
                                     {team.pairStats
                                         .sort((a, b) => b.wins - a.wins)
                                         .slice(0, 6)
-                                        .map((pair) => {
+                                        .map(async (pair) => {
                                             const winRate =
                                                 pair.plays > 0
                                                     ? (pair.wins / pair.plays) * 100
@@ -117,7 +117,7 @@ export default async function TeamStatsPage({
                                                 >
                                                     <CardHeader>
                                                         <CardTitle className="text-lg">
-                                                            {pair.playerA} & {pair.playerB}
+                                                            {await getNamefromDb(pair.playerA)} & {await getNamefromDb(pair.playerB)}
                                                         </CardTitle>
                                                     </CardHeader>
                                                     <CardContent className="flex justify-between items-center">
@@ -172,4 +172,9 @@ function EmptyState({ text }: { text: string }) {
             <p className="text-muted-foreground text-sm text-center">{text}</p>
         </div>
     );
+}
+
+async function getNamefromDb(email: string) {
+    const user = await prisma.user.findUnique({ where: { email } });
+    return user?.name || email;
 }
