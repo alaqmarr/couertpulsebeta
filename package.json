@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "start": "next start",
-    "postinstall": "npx ts-node scripts/built-time.ts && npx prisma db push && npx prisma generate",
+    "postinstall": "npx prisma db push && npx prisma generate && npx ts-node scripts/built-time.ts",
     "build": "next build"
   },
   "dependencies": {
