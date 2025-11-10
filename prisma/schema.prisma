@@ -253,6 +253,17 @@ model SessionPairHistory {
 
   @@unique([sessionId, playerA, playerB])
 }
+model SessionPlayerStats {
+  id         String   @id @default(cuid())
+  sessionId  String
+  player     String
+  plays      Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([sessionId, player])
+}
+
 
 model Tournament {
   id                String   @id @default(cuid())

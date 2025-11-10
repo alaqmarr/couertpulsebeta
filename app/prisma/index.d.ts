@@ -68,6 +68,11 @@ export type PairStat = $Result.DefaultSelection<Prisma.$PairStatPayload>
  */
 export type SessionPairHistory = $Result.DefaultSelection<Prisma.$SessionPairHistoryPayload>
 /**
+ * Model SessionPlayerStats
+ * 
+ */
+export type SessionPlayerStats = $Result.DefaultSelection<Prisma.$SessionPlayerStatsPayload>
+/**
  * Model Tournament
  * 
  */
@@ -390,6 +395,16 @@ export class PrismaClient<
     * ```
     */
   get sessionPairHistory(): Prisma.SessionPairHistoryDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.sessionPlayerStats`: Exposes CRUD operations for the **SessionPlayerStats** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more SessionPlayerStats
+    * const sessionPlayerStats = await prisma.sessionPlayerStats.findMany()
+    * ```
+    */
+  get sessionPlayerStats(): Prisma.SessionPlayerStatsDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.tournament`: Exposes CRUD operations for the **Tournament** model.
@@ -920,6 +935,7 @@ export namespace Prisma {
     Game: 'Game',
     PairStat: 'PairStat',
     SessionPairHistory: 'SessionPairHistory',
+    SessionPlayerStats: 'SessionPlayerStats',
     Tournament: 'Tournament',
     TournamentTeam: 'TournamentTeam',
     TournamentGame: 'TournamentGame',
@@ -946,7 +962,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "clerkUser" | "user" | "team" | "teamMember" | "session" | "sessionParticipant" | "game" | "pairStat" | "sessionPairHistory" | "tournament" | "tournamentTeam" | "tournamentGame" | "stage" | "payment" | "notification" | "activity" | "calendarEvent"
+      modelProps: "clerkUser" | "user" | "team" | "teamMember" | "session" | "sessionParticipant" | "game" | "pairStat" | "sessionPairHistory" | "sessionPlayerStats" | "tournament" | "tournamentTeam" | "tournamentGame" | "stage" | "payment" | "notification" | "activity" | "calendarEvent"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1613,6 +1629,80 @@ export namespace Prisma {
           count: {
             args: Prisma.SessionPairHistoryCountArgs<ExtArgs>
             result: $Utils.Optional<SessionPairHistoryCountAggregateOutputType> | number
+          }
+        }
+      }
+      SessionPlayerStats: {
+        payload: Prisma.$SessionPlayerStatsPayload<ExtArgs>
+        fields: Prisma.SessionPlayerStatsFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.SessionPlayerStatsFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionPlayerStatsPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.SessionPlayerStatsFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionPlayerStatsPayload>
+          }
+          findFirst: {
+            args: Prisma.SessionPlayerStatsFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionPlayerStatsPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.SessionPlayerStatsFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionPlayerStatsPayload>
+          }
+          findMany: {
+            args: Prisma.SessionPlayerStatsFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionPlayerStatsPayload>[]
+          }
+          create: {
+            args: Prisma.SessionPlayerStatsCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionPlayerStatsPayload>
+          }
+          createMany: {
+            args: Prisma.SessionPlayerStatsCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.SessionPlayerStatsCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionPlayerStatsPayload>[]
+          }
+          delete: {
+            args: Prisma.SessionPlayerStatsDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionPlayerStatsPayload>
+          }
+          update: {
+            args: Prisma.SessionPlayerStatsUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionPlayerStatsPayload>
+          }
+          deleteMany: {
+            args: Prisma.SessionPlayerStatsDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.SessionPlayerStatsUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.SessionPlayerStatsUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionPlayerStatsPayload>[]
+          }
+          upsert: {
+            args: Prisma.SessionPlayerStatsUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionPlayerStatsPayload>
+          }
+          aggregate: {
+            args: Prisma.SessionPlayerStatsAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateSessionPlayerStats>
+          }
+          groupBy: {
+            args: Prisma.SessionPlayerStatsGroupByArgs<ExtArgs>
+            result: $Utils.Optional<SessionPlayerStatsGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.SessionPlayerStatsCountArgs<ExtArgs>
+            result: $Utils.Optional<SessionPlayerStatsCountAggregateOutputType> | number
           }
         }
       }
@@ -2313,6 +2403,7 @@ export namespace Prisma {
     game?: GameOmit
     pairStat?: PairStatOmit
     sessionPairHistory?: SessionPairHistoryOmit
+    sessionPlayerStats?: SessionPlayerStatsOmit
     tournament?: TournamentOmit
     tournamentTeam?: TournamentTeamOmit
     tournamentGame?: TournamentGameOmit
@@ -13061,6 +13152,1048 @@ export namespace Prisma {
 
 
   /**
+   * Model SessionPlayerStats
+   */
+
+  export type AggregateSessionPlayerStats = {
+    _count: SessionPlayerStatsCountAggregateOutputType | null
+    _avg: SessionPlayerStatsAvgAggregateOutputType | null
+    _sum: SessionPlayerStatsSumAggregateOutputType | null
+    _min: SessionPlayerStatsMinAggregateOutputType | null
+    _max: SessionPlayerStatsMaxAggregateOutputType | null
+  }
+
+  export type SessionPlayerStatsAvgAggregateOutputType = {
+    plays: number | null
+  }
+
+  export type SessionPlayerStatsSumAggregateOutputType = {
+    plays: number | null
+  }
+
+  export type SessionPlayerStatsMinAggregateOutputType = {
+    id: string | null
+    sessionId: string | null
+    player: string | null
+    plays: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type SessionPlayerStatsMaxAggregateOutputType = {
+    id: string | null
+    sessionId: string | null
+    player: string | null
+    plays: number | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type SessionPlayerStatsCountAggregateOutputType = {
+    id: number
+    sessionId: number
+    player: number
+    plays: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type SessionPlayerStatsAvgAggregateInputType = {
+    plays?: true
+  }
+
+  export type SessionPlayerStatsSumAggregateInputType = {
+    plays?: true
+  }
+
+  export type SessionPlayerStatsMinAggregateInputType = {
+    id?: true
+    sessionId?: true
+    player?: true
+    plays?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type SessionPlayerStatsMaxAggregateInputType = {
+    id?: true
+    sessionId?: true
+    player?: true
+    plays?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type SessionPlayerStatsCountAggregateInputType = {
+    id?: true
+    sessionId?: true
+    player?: true
+    plays?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type SessionPlayerStatsAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SessionPlayerStats to aggregate.
+     */
+    where?: SessionPlayerStatsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SessionPlayerStats to fetch.
+     */
+    orderBy?: SessionPlayerStatsOrderByWithRelationInput | SessionPlayerStatsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: SessionPlayerStatsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SessionPlayerStats from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SessionPlayerStats.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned SessionPlayerStats
+    **/
+    _count?: true | SessionPlayerStatsCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: SessionPlayerStatsAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: SessionPlayerStatsSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: SessionPlayerStatsMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: SessionPlayerStatsMaxAggregateInputType
+  }
+
+  export type GetSessionPlayerStatsAggregateType<T extends SessionPlayerStatsAggregateArgs> = {
+        [P in keyof T & keyof AggregateSessionPlayerStats]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateSessionPlayerStats[P]>
+      : GetScalarType<T[P], AggregateSessionPlayerStats[P]>
+  }
+
+
+
+
+  export type SessionPlayerStatsGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SessionPlayerStatsWhereInput
+    orderBy?: SessionPlayerStatsOrderByWithAggregationInput | SessionPlayerStatsOrderByWithAggregationInput[]
+    by: SessionPlayerStatsScalarFieldEnum[] | SessionPlayerStatsScalarFieldEnum
+    having?: SessionPlayerStatsScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: SessionPlayerStatsCountAggregateInputType | true
+    _avg?: SessionPlayerStatsAvgAggregateInputType
+    _sum?: SessionPlayerStatsSumAggregateInputType
+    _min?: SessionPlayerStatsMinAggregateInputType
+    _max?: SessionPlayerStatsMaxAggregateInputType
+  }
+
+  export type SessionPlayerStatsGroupByOutputType = {
+    id: string
+    sessionId: string
+    player: string
+    plays: number
+    createdAt: Date
+    updatedAt: Date
+    _count: SessionPlayerStatsCountAggregateOutputType | null
+    _avg: SessionPlayerStatsAvgAggregateOutputType | null
+    _sum: SessionPlayerStatsSumAggregateOutputType | null
+    _min: SessionPlayerStatsMinAggregateOutputType | null
+    _max: SessionPlayerStatsMaxAggregateOutputType | null
+  }
+
+  type GetSessionPlayerStatsGroupByPayload<T extends SessionPlayerStatsGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<SessionPlayerStatsGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof SessionPlayerStatsGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], SessionPlayerStatsGroupByOutputType[P]>
+            : GetScalarType<T[P], SessionPlayerStatsGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type SessionPlayerStatsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    sessionId?: boolean
+    player?: boolean
+    plays?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["sessionPlayerStats"]>
+
+  export type SessionPlayerStatsSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    sessionId?: boolean
+    player?: boolean
+    plays?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["sessionPlayerStats"]>
+
+  export type SessionPlayerStatsSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    sessionId?: boolean
+    player?: boolean
+    plays?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["sessionPlayerStats"]>
+
+  export type SessionPlayerStatsSelectScalar = {
+    id?: boolean
+    sessionId?: boolean
+    player?: boolean
+    plays?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type SessionPlayerStatsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "sessionId" | "player" | "plays" | "createdAt" | "updatedAt", ExtArgs["result"]["sessionPlayerStats"]>
+
+  export type $SessionPlayerStatsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "SessionPlayerStats"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      sessionId: string
+      player: string
+      plays: number
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["sessionPlayerStats"]>
+    composites: {}
+  }
+
+  type SessionPlayerStatsGetPayload<S extends boolean | null | undefined | SessionPlayerStatsDefaultArgs> = $Result.GetResult<Prisma.$SessionPlayerStatsPayload, S>
+
+  type SessionPlayerStatsCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<SessionPlayerStatsFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: SessionPlayerStatsCountAggregateInputType | true
+    }
+
+  export interface SessionPlayerStatsDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['SessionPlayerStats'], meta: { name: 'SessionPlayerStats' } }
+    /**
+     * Find zero or one SessionPlayerStats that matches the filter.
+     * @param {SessionPlayerStatsFindUniqueArgs} args - Arguments to find a SessionPlayerStats
+     * @example
+     * // Get one SessionPlayerStats
+     * const sessionPlayerStats = await prisma.sessionPlayerStats.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends SessionPlayerStatsFindUniqueArgs>(args: SelectSubset<T, SessionPlayerStatsFindUniqueArgs<ExtArgs>>): Prisma__SessionPlayerStatsClient<$Result.GetResult<Prisma.$SessionPlayerStatsPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one SessionPlayerStats that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {SessionPlayerStatsFindUniqueOrThrowArgs} args - Arguments to find a SessionPlayerStats
+     * @example
+     * // Get one SessionPlayerStats
+     * const sessionPlayerStats = await prisma.sessionPlayerStats.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends SessionPlayerStatsFindUniqueOrThrowArgs>(args: SelectSubset<T, SessionPlayerStatsFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SessionPlayerStatsClient<$Result.GetResult<Prisma.$SessionPlayerStatsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first SessionPlayerStats that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionPlayerStatsFindFirstArgs} args - Arguments to find a SessionPlayerStats
+     * @example
+     * // Get one SessionPlayerStats
+     * const sessionPlayerStats = await prisma.sessionPlayerStats.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends SessionPlayerStatsFindFirstArgs>(args?: SelectSubset<T, SessionPlayerStatsFindFirstArgs<ExtArgs>>): Prisma__SessionPlayerStatsClient<$Result.GetResult<Prisma.$SessionPlayerStatsPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first SessionPlayerStats that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionPlayerStatsFindFirstOrThrowArgs} args - Arguments to find a SessionPlayerStats
+     * @example
+     * // Get one SessionPlayerStats
+     * const sessionPlayerStats = await prisma.sessionPlayerStats.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends SessionPlayerStatsFindFirstOrThrowArgs>(args?: SelectSubset<T, SessionPlayerStatsFindFirstOrThrowArgs<ExtArgs>>): Prisma__SessionPlayerStatsClient<$Result.GetResult<Prisma.$SessionPlayerStatsPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more SessionPlayerStats that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionPlayerStatsFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all SessionPlayerStats
+     * const sessionPlayerStats = await prisma.sessionPlayerStats.findMany()
+     * 
+     * // Get first 10 SessionPlayerStats
+     * const sessionPlayerStats = await prisma.sessionPlayerStats.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const sessionPlayerStatsWithIdOnly = await prisma.sessionPlayerStats.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends SessionPlayerStatsFindManyArgs>(args?: SelectSubset<T, SessionPlayerStatsFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SessionPlayerStatsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a SessionPlayerStats.
+     * @param {SessionPlayerStatsCreateArgs} args - Arguments to create a SessionPlayerStats.
+     * @example
+     * // Create one SessionPlayerStats
+     * const SessionPlayerStats = await prisma.sessionPlayerStats.create({
+     *   data: {
+     *     // ... data to create a SessionPlayerStats
+     *   }
+     * })
+     * 
+     */
+    create<T extends SessionPlayerStatsCreateArgs>(args: SelectSubset<T, SessionPlayerStatsCreateArgs<ExtArgs>>): Prisma__SessionPlayerStatsClient<$Result.GetResult<Prisma.$SessionPlayerStatsPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many SessionPlayerStats.
+     * @param {SessionPlayerStatsCreateManyArgs} args - Arguments to create many SessionPlayerStats.
+     * @example
+     * // Create many SessionPlayerStats
+     * const sessionPlayerStats = await prisma.sessionPlayerStats.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends SessionPlayerStatsCreateManyArgs>(args?: SelectSubset<T, SessionPlayerStatsCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many SessionPlayerStats and returns the data saved in the database.
+     * @param {SessionPlayerStatsCreateManyAndReturnArgs} args - Arguments to create many SessionPlayerStats.
+     * @example
+     * // Create many SessionPlayerStats
+     * const sessionPlayerStats = await prisma.sessionPlayerStats.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many SessionPlayerStats and only return the `id`
+     * const sessionPlayerStatsWithIdOnly = await prisma.sessionPlayerStats.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends SessionPlayerStatsCreateManyAndReturnArgs>(args?: SelectSubset<T, SessionPlayerStatsCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SessionPlayerStatsPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a SessionPlayerStats.
+     * @param {SessionPlayerStatsDeleteArgs} args - Arguments to delete one SessionPlayerStats.
+     * @example
+     * // Delete one SessionPlayerStats
+     * const SessionPlayerStats = await prisma.sessionPlayerStats.delete({
+     *   where: {
+     *     // ... filter to delete one SessionPlayerStats
+     *   }
+     * })
+     * 
+     */
+    delete<T extends SessionPlayerStatsDeleteArgs>(args: SelectSubset<T, SessionPlayerStatsDeleteArgs<ExtArgs>>): Prisma__SessionPlayerStatsClient<$Result.GetResult<Prisma.$SessionPlayerStatsPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one SessionPlayerStats.
+     * @param {SessionPlayerStatsUpdateArgs} args - Arguments to update one SessionPlayerStats.
+     * @example
+     * // Update one SessionPlayerStats
+     * const sessionPlayerStats = await prisma.sessionPlayerStats.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends SessionPlayerStatsUpdateArgs>(args: SelectSubset<T, SessionPlayerStatsUpdateArgs<ExtArgs>>): Prisma__SessionPlayerStatsClient<$Result.GetResult<Prisma.$SessionPlayerStatsPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more SessionPlayerStats.
+     * @param {SessionPlayerStatsDeleteManyArgs} args - Arguments to filter SessionPlayerStats to delete.
+     * @example
+     * // Delete a few SessionPlayerStats
+     * const { count } = await prisma.sessionPlayerStats.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends SessionPlayerStatsDeleteManyArgs>(args?: SelectSubset<T, SessionPlayerStatsDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more SessionPlayerStats.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionPlayerStatsUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many SessionPlayerStats
+     * const sessionPlayerStats = await prisma.sessionPlayerStats.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends SessionPlayerStatsUpdateManyArgs>(args: SelectSubset<T, SessionPlayerStatsUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more SessionPlayerStats and returns the data updated in the database.
+     * @param {SessionPlayerStatsUpdateManyAndReturnArgs} args - Arguments to update many SessionPlayerStats.
+     * @example
+     * // Update many SessionPlayerStats
+     * const sessionPlayerStats = await prisma.sessionPlayerStats.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more SessionPlayerStats and only return the `id`
+     * const sessionPlayerStatsWithIdOnly = await prisma.sessionPlayerStats.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends SessionPlayerStatsUpdateManyAndReturnArgs>(args: SelectSubset<T, SessionPlayerStatsUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SessionPlayerStatsPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one SessionPlayerStats.
+     * @param {SessionPlayerStatsUpsertArgs} args - Arguments to update or create a SessionPlayerStats.
+     * @example
+     * // Update or create a SessionPlayerStats
+     * const sessionPlayerStats = await prisma.sessionPlayerStats.upsert({
+     *   create: {
+     *     // ... data to create a SessionPlayerStats
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the SessionPlayerStats we want to update
+     *   }
+     * })
+     */
+    upsert<T extends SessionPlayerStatsUpsertArgs>(args: SelectSubset<T, SessionPlayerStatsUpsertArgs<ExtArgs>>): Prisma__SessionPlayerStatsClient<$Result.GetResult<Prisma.$SessionPlayerStatsPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of SessionPlayerStats.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionPlayerStatsCountArgs} args - Arguments to filter SessionPlayerStats to count.
+     * @example
+     * // Count the number of SessionPlayerStats
+     * const count = await prisma.sessionPlayerStats.count({
+     *   where: {
+     *     // ... the filter for the SessionPlayerStats we want to count
+     *   }
+     * })
+    **/
+    count<T extends SessionPlayerStatsCountArgs>(
+      args?: Subset<T, SessionPlayerStatsCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], SessionPlayerStatsCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a SessionPlayerStats.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionPlayerStatsAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends SessionPlayerStatsAggregateArgs>(args: Subset<T, SessionPlayerStatsAggregateArgs>): Prisma.PrismaPromise<GetSessionPlayerStatsAggregateType<T>>
+
+    /**
+     * Group by SessionPlayerStats.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionPlayerStatsGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends SessionPlayerStatsGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: SessionPlayerStatsGroupByArgs['orderBy'] }
+        : { orderBy?: SessionPlayerStatsGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, SessionPlayerStatsGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSessionPlayerStatsGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the SessionPlayerStats model
+   */
+  readonly fields: SessionPlayerStatsFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for SessionPlayerStats.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__SessionPlayerStatsClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the SessionPlayerStats model
+   */
+  interface SessionPlayerStatsFieldRefs {
+    readonly id: FieldRef<"SessionPlayerStats", 'String'>
+    readonly sessionId: FieldRef<"SessionPlayerStats", 'String'>
+    readonly player: FieldRef<"SessionPlayerStats", 'String'>
+    readonly plays: FieldRef<"SessionPlayerStats", 'Int'>
+    readonly createdAt: FieldRef<"SessionPlayerStats", 'DateTime'>
+    readonly updatedAt: FieldRef<"SessionPlayerStats", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * SessionPlayerStats findUnique
+   */
+  export type SessionPlayerStatsFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionPlayerStats
+     */
+    select?: SessionPlayerStatsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionPlayerStats
+     */
+    omit?: SessionPlayerStatsOmit<ExtArgs> | null
+    /**
+     * Filter, which SessionPlayerStats to fetch.
+     */
+    where: SessionPlayerStatsWhereUniqueInput
+  }
+
+  /**
+   * SessionPlayerStats findUniqueOrThrow
+   */
+  export type SessionPlayerStatsFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionPlayerStats
+     */
+    select?: SessionPlayerStatsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionPlayerStats
+     */
+    omit?: SessionPlayerStatsOmit<ExtArgs> | null
+    /**
+     * Filter, which SessionPlayerStats to fetch.
+     */
+    where: SessionPlayerStatsWhereUniqueInput
+  }
+
+  /**
+   * SessionPlayerStats findFirst
+   */
+  export type SessionPlayerStatsFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionPlayerStats
+     */
+    select?: SessionPlayerStatsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionPlayerStats
+     */
+    omit?: SessionPlayerStatsOmit<ExtArgs> | null
+    /**
+     * Filter, which SessionPlayerStats to fetch.
+     */
+    where?: SessionPlayerStatsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SessionPlayerStats to fetch.
+     */
+    orderBy?: SessionPlayerStatsOrderByWithRelationInput | SessionPlayerStatsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SessionPlayerStats.
+     */
+    cursor?: SessionPlayerStatsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SessionPlayerStats from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SessionPlayerStats.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SessionPlayerStats.
+     */
+    distinct?: SessionPlayerStatsScalarFieldEnum | SessionPlayerStatsScalarFieldEnum[]
+  }
+
+  /**
+   * SessionPlayerStats findFirstOrThrow
+   */
+  export type SessionPlayerStatsFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionPlayerStats
+     */
+    select?: SessionPlayerStatsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionPlayerStats
+     */
+    omit?: SessionPlayerStatsOmit<ExtArgs> | null
+    /**
+     * Filter, which SessionPlayerStats to fetch.
+     */
+    where?: SessionPlayerStatsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SessionPlayerStats to fetch.
+     */
+    orderBy?: SessionPlayerStatsOrderByWithRelationInput | SessionPlayerStatsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SessionPlayerStats.
+     */
+    cursor?: SessionPlayerStatsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SessionPlayerStats from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SessionPlayerStats.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SessionPlayerStats.
+     */
+    distinct?: SessionPlayerStatsScalarFieldEnum | SessionPlayerStatsScalarFieldEnum[]
+  }
+
+  /**
+   * SessionPlayerStats findMany
+   */
+  export type SessionPlayerStatsFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionPlayerStats
+     */
+    select?: SessionPlayerStatsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionPlayerStats
+     */
+    omit?: SessionPlayerStatsOmit<ExtArgs> | null
+    /**
+     * Filter, which SessionPlayerStats to fetch.
+     */
+    where?: SessionPlayerStatsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SessionPlayerStats to fetch.
+     */
+    orderBy?: SessionPlayerStatsOrderByWithRelationInput | SessionPlayerStatsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing SessionPlayerStats.
+     */
+    cursor?: SessionPlayerStatsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SessionPlayerStats from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SessionPlayerStats.
+     */
+    skip?: number
+    distinct?: SessionPlayerStatsScalarFieldEnum | SessionPlayerStatsScalarFieldEnum[]
+  }
+
+  /**
+   * SessionPlayerStats create
+   */
+  export type SessionPlayerStatsCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionPlayerStats
+     */
+    select?: SessionPlayerStatsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionPlayerStats
+     */
+    omit?: SessionPlayerStatsOmit<ExtArgs> | null
+    /**
+     * The data needed to create a SessionPlayerStats.
+     */
+    data: XOR<SessionPlayerStatsCreateInput, SessionPlayerStatsUncheckedCreateInput>
+  }
+
+  /**
+   * SessionPlayerStats createMany
+   */
+  export type SessionPlayerStatsCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many SessionPlayerStats.
+     */
+    data: SessionPlayerStatsCreateManyInput | SessionPlayerStatsCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * SessionPlayerStats createManyAndReturn
+   */
+  export type SessionPlayerStatsCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionPlayerStats
+     */
+    select?: SessionPlayerStatsSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionPlayerStats
+     */
+    omit?: SessionPlayerStatsOmit<ExtArgs> | null
+    /**
+     * The data used to create many SessionPlayerStats.
+     */
+    data: SessionPlayerStatsCreateManyInput | SessionPlayerStatsCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * SessionPlayerStats update
+   */
+  export type SessionPlayerStatsUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionPlayerStats
+     */
+    select?: SessionPlayerStatsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionPlayerStats
+     */
+    omit?: SessionPlayerStatsOmit<ExtArgs> | null
+    /**
+     * The data needed to update a SessionPlayerStats.
+     */
+    data: XOR<SessionPlayerStatsUpdateInput, SessionPlayerStatsUncheckedUpdateInput>
+    /**
+     * Choose, which SessionPlayerStats to update.
+     */
+    where: SessionPlayerStatsWhereUniqueInput
+  }
+
+  /**
+   * SessionPlayerStats updateMany
+   */
+  export type SessionPlayerStatsUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update SessionPlayerStats.
+     */
+    data: XOR<SessionPlayerStatsUpdateManyMutationInput, SessionPlayerStatsUncheckedUpdateManyInput>
+    /**
+     * Filter which SessionPlayerStats to update
+     */
+    where?: SessionPlayerStatsWhereInput
+    /**
+     * Limit how many SessionPlayerStats to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * SessionPlayerStats updateManyAndReturn
+   */
+  export type SessionPlayerStatsUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionPlayerStats
+     */
+    select?: SessionPlayerStatsSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionPlayerStats
+     */
+    omit?: SessionPlayerStatsOmit<ExtArgs> | null
+    /**
+     * The data used to update SessionPlayerStats.
+     */
+    data: XOR<SessionPlayerStatsUpdateManyMutationInput, SessionPlayerStatsUncheckedUpdateManyInput>
+    /**
+     * Filter which SessionPlayerStats to update
+     */
+    where?: SessionPlayerStatsWhereInput
+    /**
+     * Limit how many SessionPlayerStats to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * SessionPlayerStats upsert
+   */
+  export type SessionPlayerStatsUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionPlayerStats
+     */
+    select?: SessionPlayerStatsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionPlayerStats
+     */
+    omit?: SessionPlayerStatsOmit<ExtArgs> | null
+    /**
+     * The filter to search for the SessionPlayerStats to update in case it exists.
+     */
+    where: SessionPlayerStatsWhereUniqueInput
+    /**
+     * In case the SessionPlayerStats found by the `where` argument doesn't exist, create a new SessionPlayerStats with this data.
+     */
+    create: XOR<SessionPlayerStatsCreateInput, SessionPlayerStatsUncheckedCreateInput>
+    /**
+     * In case the SessionPlayerStats was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<SessionPlayerStatsUpdateInput, SessionPlayerStatsUncheckedUpdateInput>
+  }
+
+  /**
+   * SessionPlayerStats delete
+   */
+  export type SessionPlayerStatsDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionPlayerStats
+     */
+    select?: SessionPlayerStatsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionPlayerStats
+     */
+    omit?: SessionPlayerStatsOmit<ExtArgs> | null
+    /**
+     * Filter which SessionPlayerStats to delete.
+     */
+    where: SessionPlayerStatsWhereUniqueInput
+  }
+
+  /**
+   * SessionPlayerStats deleteMany
+   */
+  export type SessionPlayerStatsDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SessionPlayerStats to delete
+     */
+    where?: SessionPlayerStatsWhereInput
+    /**
+     * Limit how many SessionPlayerStats to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * SessionPlayerStats without action
+   */
+  export type SessionPlayerStatsDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionPlayerStats
+     */
+    select?: SessionPlayerStatsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionPlayerStats
+     */
+    omit?: SessionPlayerStatsOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Model Tournament
    */
 
@@ -22272,6 +23405,18 @@ export namespace Prisma {
   export type SessionPairHistoryScalarFieldEnum = (typeof SessionPairHistoryScalarFieldEnum)[keyof typeof SessionPairHistoryScalarFieldEnum]
 
 
+  export const SessionPlayerStatsScalarFieldEnum: {
+    id: 'id',
+    sessionId: 'sessionId',
+    player: 'player',
+    plays: 'plays',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type SessionPlayerStatsScalarFieldEnum = (typeof SessionPlayerStatsScalarFieldEnum)[keyof typeof SessionPlayerStatsScalarFieldEnum]
+
+
   export const TournamentScalarFieldEnum: {
     id: 'id',
     name: 'name',
@@ -23208,6 +24353,66 @@ export namespace Prisma {
     playerA?: StringWithAggregatesFilter<"SessionPairHistory"> | string
     playerB?: StringWithAggregatesFilter<"SessionPairHistory"> | string
     createdAt?: DateTimeWithAggregatesFilter<"SessionPairHistory"> | Date | string
+  }
+
+  export type SessionPlayerStatsWhereInput = {
+    AND?: SessionPlayerStatsWhereInput | SessionPlayerStatsWhereInput[]
+    OR?: SessionPlayerStatsWhereInput[]
+    NOT?: SessionPlayerStatsWhereInput | SessionPlayerStatsWhereInput[]
+    id?: StringFilter<"SessionPlayerStats"> | string
+    sessionId?: StringFilter<"SessionPlayerStats"> | string
+    player?: StringFilter<"SessionPlayerStats"> | string
+    plays?: IntFilter<"SessionPlayerStats"> | number
+    createdAt?: DateTimeFilter<"SessionPlayerStats"> | Date | string
+    updatedAt?: DateTimeFilter<"SessionPlayerStats"> | Date | string
+  }
+
+  export type SessionPlayerStatsOrderByWithRelationInput = {
+    id?: SortOrder
+    sessionId?: SortOrder
+    player?: SortOrder
+    plays?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type SessionPlayerStatsWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    sessionId_player?: SessionPlayerStatsSessionIdPlayerCompoundUniqueInput
+    AND?: SessionPlayerStatsWhereInput | SessionPlayerStatsWhereInput[]
+    OR?: SessionPlayerStatsWhereInput[]
+    NOT?: SessionPlayerStatsWhereInput | SessionPlayerStatsWhereInput[]
+    sessionId?: StringFilter<"SessionPlayerStats"> | string
+    player?: StringFilter<"SessionPlayerStats"> | string
+    plays?: IntFilter<"SessionPlayerStats"> | number
+    createdAt?: DateTimeFilter<"SessionPlayerStats"> | Date | string
+    updatedAt?: DateTimeFilter<"SessionPlayerStats"> | Date | string
+  }, "id" | "sessionId_player">
+
+  export type SessionPlayerStatsOrderByWithAggregationInput = {
+    id?: SortOrder
+    sessionId?: SortOrder
+    player?: SortOrder
+    plays?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: SessionPlayerStatsCountOrderByAggregateInput
+    _avg?: SessionPlayerStatsAvgOrderByAggregateInput
+    _max?: SessionPlayerStatsMaxOrderByAggregateInput
+    _min?: SessionPlayerStatsMinOrderByAggregateInput
+    _sum?: SessionPlayerStatsSumOrderByAggregateInput
+  }
+
+  export type SessionPlayerStatsScalarWhereWithAggregatesInput = {
+    AND?: SessionPlayerStatsScalarWhereWithAggregatesInput | SessionPlayerStatsScalarWhereWithAggregatesInput[]
+    OR?: SessionPlayerStatsScalarWhereWithAggregatesInput[]
+    NOT?: SessionPlayerStatsScalarWhereWithAggregatesInput | SessionPlayerStatsScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"SessionPlayerStats"> | string
+    sessionId?: StringWithAggregatesFilter<"SessionPlayerStats"> | string
+    player?: StringWithAggregatesFilter<"SessionPlayerStats"> | string
+    plays?: IntWithAggregatesFilter<"SessionPlayerStats"> | number
+    createdAt?: DateTimeWithAggregatesFilter<"SessionPlayerStats"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"SessionPlayerStats"> | Date | string
   }
 
   export type TournamentWhereInput = {
@@ -24481,6 +25686,69 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type SessionPlayerStatsCreateInput = {
+    id?: string
+    sessionId: string
+    player: string
+    plays?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type SessionPlayerStatsUncheckedCreateInput = {
+    id?: string
+    sessionId: string
+    player: string
+    plays?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type SessionPlayerStatsUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    player?: StringFieldUpdateOperationsInput | string
+    plays?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SessionPlayerStatsUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    player?: StringFieldUpdateOperationsInput | string
+    plays?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SessionPlayerStatsCreateManyInput = {
+    id?: string
+    sessionId: string
+    player: string
+    plays?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type SessionPlayerStatsUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    player?: StringFieldUpdateOperationsInput | string
+    plays?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SessionPlayerStatsUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    player?: StringFieldUpdateOperationsInput | string
+    plays?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type TournamentCreateInput = {
     id?: string
     name: string
@@ -25746,6 +27014,46 @@ export namespace Prisma {
     playerA?: SortOrder
     playerB?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type SessionPlayerStatsSessionIdPlayerCompoundUniqueInput = {
+    sessionId: string
+    player: string
+  }
+
+  export type SessionPlayerStatsCountOrderByAggregateInput = {
+    id?: SortOrder
+    sessionId?: SortOrder
+    player?: SortOrder
+    plays?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type SessionPlayerStatsAvgOrderByAggregateInput = {
+    plays?: SortOrder
+  }
+
+  export type SessionPlayerStatsMaxOrderByAggregateInput = {
+    id?: SortOrder
+    sessionId?: SortOrder
+    player?: SortOrder
+    plays?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type SessionPlayerStatsMinOrderByAggregateInput = {
+    id?: SortOrder
+    sessionId?: SortOrder
+    player?: SortOrder
+    plays?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type SessionPlayerStatsSumOrderByAggregateInput = {
+    plays?: SortOrder
   }
 
   export type StageListRelationFilter = {

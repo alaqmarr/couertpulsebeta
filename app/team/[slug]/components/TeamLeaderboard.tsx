@@ -101,10 +101,10 @@ export default function TeamLeaderboard({ teamId }: { teamId: string }) {
                                 <TableRow>
                                     <TableHead className="w-[40px] px-2">#</TableHead>
                                     <TableHead>Player</TableHead>
-                                    <TableHead className="text-right">Plays</TableHead>
-                                    <TableHead className="text-right">Wins</TableHead>
-                                    <TableHead className="text-right">Losses</TableHead>
-                                    <TableHead className="text-right">Win Rate</TableHead>
+                                    <TableHead className="text-right">M</TableHead>
+                                    <TableHead className="text-right">W</TableHead>
+                                    <TableHead className="text-right">L</TableHead>
+                                    <TableHead className="text-right">W %</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>

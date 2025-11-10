@@ -62,6 +62,9 @@ export async function createGameAction(
 /* =========================================================
    RANDOMIZE TEAMS — Fair Rotation (No Pair Repeat Within Session)
    ========================================================= */
+/* =========================================================
+   RANDOMIZE TEAMS — Fair Rotation with Odd Player Handling
+   ========================================================= */
 export async function randomizeTeamsAction(
   teamSlug: string,
   sessionSlug: string,
@@ -77,107 +80,149 @@ export async function randomizeTeamsAction(
       participants: { where: { isSelected: true }, include: { member: true } },
     },
   });
-
   if (!session) throw new Error("Session not found");
   if (session.team.ownerId !== user.id)
     throw new Error("Only the team owner can randomize.");
 
-  const players = session.participants.map((p) => p.member.email);
-  const required = matchType === "SINGLES" ? 2 : 4;
-  if (players.length < required)
-    throw new Error(`Need ${required} players, have ${players.length}.`);
-
   const sessionId = session.id;
+  const players = session.participants.map((p) => p.member.email);
+  const totalPlayers = players.length;
 
-  // All possible combinations for doubles
-  const allPairs: [string, string][] = [];
-  if (matchType === "DOUBLES") {
-    for (let i = 0; i < players.length; i++) {
-      for (let j = i + 1; j < players.length; j++) {
-        allPairs.push([players[i], players[j]]);
-      }
-    }
-  }
+  if (totalPlayers < 2)
+    throw new Error("Need at least 2 players to create a match.");
 
-  // Fetch existing pairs for this session
+  const required = matchType === "SINGLES" ? 2 : 4;
+  if (totalPlayers < required)
+    throw new Error(`Need ${required} players, have ${totalPlayers}.`);
+
+  // Fetch prior data
   const usedPairs = await prisma.sessionPairHistory.findMany({
     where: { sessionId },
   });
-
   const usedSet = new Set(
     usedPairs.map((p) => [p.playerA, p.playerB].sort().join("|"))
   );
+
+  const playStats = await prisma.sessionPlayerStats.findMany({
+    where: { sessionId },
+  });
+  const playCountMap = new Map(playStats.map((p) => [p.player, p.plays]));
+
+  // Initialize missing player stats
+  for (const player of players) {
+    if (!playCountMap.has(player)) {
+      await prisma.sessionPlayerStats.create({
+        data: { sessionId, player, plays: 0 },
+      });
+      playCountMap.set(player, 0);
+    }
+  }
+
+  // Determine who plays and who rests this round (if odd count)
+  const minPlays = Math.min(...playCountMap.values());
+  const availablePlayers = [...players].sort((a, b) => {
+    return playCountMap.get(a)! - playCountMap.get(b)!;
+  });
+
+  let activePlayers: string[];
+  let restingPlayer: string | null = null;
+
+  if (totalPlayers % required !== 0) {
+    restingPlayer = availablePlayers.find(
+      (p) => playCountMap.get(p)! === minPlays
+    )!;
+    activePlayers = players.filter((p) => p !== restingPlayer);
+  } else {
+    activePlayers = players;
+  }
+
+  const shuffled = [...activePlayers].sort(() => Math.random() - 0.5);
 
   let teamAPlayers: string[];
   let teamBPlayers: string[];
 
   if (matchType === "SINGLES") {
-    // Singles just ensures different opponents each game until exhausted
+    // Find a new matchup not seen before
     const allMatchups: [string, string][] = [];
-    for (let i = 0; i < players.length; i++) {
-      for (let j = i + 1; j < players.length; j++) {
-        allMatchups.push([players[i], players[j]]);
+    for (let i = 0; i < activePlayers.length; i++) {
+      for (let j = i + 1; j < activePlayers.length; j++) {
+        allMatchups.push([activePlayers[i], activePlayers[j]]);
       }
     }
 
     const remaining = allMatchups.filter(
       (m) => !usedSet.has(m.sort().join("|"))
     );
+    let chosen: [string, string];
 
-    let pair: [string, string];
     if (remaining.length > 0) {
-      pair = remaining[Math.floor(Math.random() * remaining.length)];
+      chosen = remaining[Math.floor(Math.random() * remaining.length)];
     } else {
-      // Reset session history when all combos used
+      // Reset when all combos used
       await prisma.sessionPairHistory.deleteMany({ where: { sessionId } });
-      pair = allMatchups[Math.floor(Math.random() * allMatchups.length)];
+      chosen = allMatchups[Math.floor(Math.random() * allMatchups.length)];
     }
 
-    [teamAPlayers, teamBPlayers] = [[pair[0]], [pair[1]]];
+    teamAPlayers = [chosen[0]];
+    teamBPlayers = [chosen[1]];
 
-    // Record this matchup
+    // Record pairing
     await prisma.sessionPairHistory.create({
-      data: { sessionId, playerA: pair[0], playerB: pair[1] },
+      data: { sessionId, playerA: chosen[0], playerB: chosen[1] },
     });
   } else {
-    // DOUBLES mode
-    const remainingPairs = allPairs.filter(
-      (pair) => !usedSet.has(pair.sort().join("|"))
-    );
-
-    let chosenPair: [string, string];
-    if (remainingPairs.length > 0) {
-      chosenPair =
-        remainingPairs[Math.floor(Math.random() * remainingPairs.length)];
-    } else {
-      // Reset when all combinations are used
-      await prisma.sessionPairHistory.deleteMany({ where: { sessionId } });
-      chosenPair = allPairs[Math.floor(Math.random() * allPairs.length)];
+    // DOUBLES fair pairing
+    const allPairs: [string, string][] = [];
+    for (let i = 0; i < activePlayers.length; i++) {
+      for (let j = i + 1; j < activePlayers.length; j++) {
+        allPairs.push([activePlayers[i], activePlayers[j]]);
+      }
     }
 
-    // Record this pair
-    await prisma.sessionPairHistory.create({
-      data: {
-        sessionId,
-        playerA: chosenPair[0],
-        playerB: chosenPair[1],
-      },
-    });
+    const remaining = allPairs.filter(
+      (pair) => !usedSet.has(pair.sort().join("|"))
+    );
+    let pairA: [string, string];
 
-    // Pick opponent team ensuring no overlap
-    const availableOpponents = players.filter((p) => !chosenPair.includes(p));
-    const shuffledOpponents = [...availableOpponents].sort(
+    if (remaining.length > 0) {
+      pairA = remaining[Math.floor(Math.random() * remaining.length)];
+    } else {
+      await prisma.sessionPairHistory.deleteMany({ where: { sessionId } });
+      pairA = allPairs[Math.floor(Math.random() * allPairs.length)];
+    }
+
+    const remainingForOpponents = activePlayers.filter(
+      (p) => !pairA.includes(p)
+    );
+    const shuffledOpponents = [...remainingForOpponents].sort(
       () => Math.random() - 0.5
     );
-    const opponentPair = shuffledOpponents.slice(0, 2);
+    const pairB = shuffledOpponents.slice(0, 2);
 
-    [teamAPlayers, teamBPlayers] = [chosenPair, opponentPair];
+    teamAPlayers = pairA;
+    teamBPlayers = pairB;
+
+    // Record both pairs
+    await prisma.sessionPairHistory.create({
+      data: { sessionId, playerA: pairA[0], playerB: pairA[1] },
+    });
+    await prisma.sessionPairHistory.create({
+      data: { sessionId, playerA: pairB[0], playerB: pairB[1] },
+    });
   }
 
-  // Create new game record
+  // Update play counts
+  for (const p of activePlayers) {
+    await prisma.sessionPlayerStats.update({
+      where: { sessionId_player: { sessionId, player: p } },
+      data: { plays: { increment: 1 } },
+    });
+  }
+
+  // Create game
   await prisma.game.create({
     data: {
-      slug: `${sessionSlug}-random-${Date.now()}`,
+      slug: `${sessionSlug}-balanced-${Date.now()}`,
       sessionId,
       teamAPlayers,
       teamBPlayers,
