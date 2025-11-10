@@ -11063,8 +11063,20 @@ export namespace Prisma {
 
   export type AggregateGame = {
     _count: GameCountAggregateOutputType | null
+    _avg: GameAvgAggregateOutputType | null
+    _sum: GameSumAggregateOutputType | null
     _min: GameMinAggregateOutputType | null
     _max: GameMaxAggregateOutputType | null
+  }
+
+  export type GameAvgAggregateOutputType = {
+    teamAScore: number | null
+    teamBScore: number | null
+  }
+
+  export type GameSumAggregateOutputType = {
+    teamAScore: number | null
+    teamBScore: number | null
   }
 
   export type GameMinAggregateOutputType = {
@@ -11072,6 +11084,8 @@ export namespace Prisma {
     slug: string | null
     sessionId: string | null
     winner: string | null
+    teamAScore: number | null
+    teamBScore: number | null
     createdAt: Date | null
   }
 
@@ -11080,6 +11094,8 @@ export namespace Prisma {
     slug: string | null
     sessionId: string | null
     winner: string | null
+    teamAScore: number | null
+    teamBScore: number | null
     createdAt: Date | null
   }
 
@@ -11090,16 +11106,30 @@ export namespace Prisma {
     teamAPlayers: number
     teamBPlayers: number
     winner: number
+    teamAScore: number
+    teamBScore: number
     createdAt: number
     _all: number
   }
 
+
+  export type GameAvgAggregateInputType = {
+    teamAScore?: true
+    teamBScore?: true
+  }
+
+  export type GameSumAggregateInputType = {
+    teamAScore?: true
+    teamBScore?: true
+  }
 
   export type GameMinAggregateInputType = {
     id?: true
     slug?: true
     sessionId?: true
     winner?: true
+    teamAScore?: true
+    teamBScore?: true
     createdAt?: true
   }
 
@@ -11108,6 +11138,8 @@ export namespace Prisma {
     slug?: true
     sessionId?: true
     winner?: true
+    teamAScore?: true
+    teamBScore?: true
     createdAt?: true
   }
 
@@ -11118,6 +11150,8 @@ export namespace Prisma {
     teamAPlayers?: true
     teamBPlayers?: true
     winner?: true
+    teamAScore?: true
+    teamBScore?: true
     createdAt?: true
     _all?: true
   }
@@ -11160,6 +11194,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: GameAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: GameSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: GameMinAggregateInputType
@@ -11190,6 +11236,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: GameCountAggregateInputType | true
+    _avg?: GameAvgAggregateInputType
+    _sum?: GameSumAggregateInputType
     _min?: GameMinAggregateInputType
     _max?: GameMaxAggregateInputType
   }
@@ -11201,8 +11249,12 @@ export namespace Prisma {
     teamAPlayers: string[]
     teamBPlayers: string[]
     winner: string | null
+    teamAScore: number | null
+    teamBScore: number | null
     createdAt: Date
     _count: GameCountAggregateOutputType | null
+    _avg: GameAvgAggregateOutputType | null
+    _sum: GameSumAggregateOutputType | null
     _min: GameMinAggregateOutputType | null
     _max: GameMaxAggregateOutputType | null
   }
@@ -11228,6 +11280,8 @@ export namespace Prisma {
     teamAPlayers?: boolean
     teamBPlayers?: boolean
     winner?: boolean
+    teamAScore?: boolean
+    teamBScore?: boolean
     createdAt?: boolean
     session?: boolean | SessionDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["game"]>
@@ -11239,6 +11293,8 @@ export namespace Prisma {
     teamAPlayers?: boolean
     teamBPlayers?: boolean
     winner?: boolean
+    teamAScore?: boolean
+    teamBScore?: boolean
     createdAt?: boolean
     session?: boolean | SessionDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["game"]>
@@ -11250,6 +11306,8 @@ export namespace Prisma {
     teamAPlayers?: boolean
     teamBPlayers?: boolean
     winner?: boolean
+    teamAScore?: boolean
+    teamBScore?: boolean
     createdAt?: boolean
     session?: boolean | SessionDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["game"]>
@@ -11261,10 +11319,12 @@ export namespace Prisma {
     teamAPlayers?: boolean
     teamBPlayers?: boolean
     winner?: boolean
+    teamAScore?: boolean
+    teamBScore?: boolean
     createdAt?: boolean
   }
 
-  export type GameOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "slug" | "sessionId" | "teamAPlayers" | "teamBPlayers" | "winner" | "createdAt", ExtArgs["result"]["game"]>
+  export type GameOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "slug" | "sessionId" | "teamAPlayers" | "teamBPlayers" | "winner" | "teamAScore" | "teamBScore" | "createdAt", ExtArgs["result"]["game"]>
   export type GameInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     session?: boolean | SessionDefaultArgs<ExtArgs>
   }
@@ -11287,6 +11347,8 @@ export namespace Prisma {
       teamAPlayers: string[]
       teamBPlayers: string[]
       winner: string | null
+      teamAScore: number | null
+      teamBScore: number | null
       createdAt: Date
     }, ExtArgs["result"]["game"]>
     composites: {}
@@ -11718,6 +11780,8 @@ export namespace Prisma {
     readonly teamAPlayers: FieldRef<"Game", 'String[]'>
     readonly teamBPlayers: FieldRef<"Game", 'String[]'>
     readonly winner: FieldRef<"Game", 'String'>
+    readonly teamAScore: FieldRef<"Game", 'Int'>
+    readonly teamBScore: FieldRef<"Game", 'Int'>
     readonly createdAt: FieldRef<"Game", 'DateTime'>
   }
     
@@ -14251,10 +14315,14 @@ export namespace Prisma {
 
   export type SessionPlayerStatsAvgAggregateOutputType = {
     plays: number | null
+    totalPoints: number | null
+    pointDiff: number | null
   }
 
   export type SessionPlayerStatsSumAggregateOutputType = {
     plays: number | null
+    totalPoints: number | null
+    pointDiff: number | null
   }
 
   export type SessionPlayerStatsMinAggregateOutputType = {
@@ -14262,6 +14330,8 @@ export namespace Prisma {
     sessionId: string | null
     player: string | null
     plays: number | null
+    totalPoints: number | null
+    pointDiff: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -14271,6 +14341,8 @@ export namespace Prisma {
     sessionId: string | null
     player: string | null
     plays: number | null
+    totalPoints: number | null
+    pointDiff: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -14280,6 +14352,8 @@ export namespace Prisma {
     sessionId: number
     player: number
     plays: number
+    totalPoints: number
+    pointDiff: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -14288,10 +14362,14 @@ export namespace Prisma {
 
   export type SessionPlayerStatsAvgAggregateInputType = {
     plays?: true
+    totalPoints?: true
+    pointDiff?: true
   }
 
   export type SessionPlayerStatsSumAggregateInputType = {
     plays?: true
+    totalPoints?: true
+    pointDiff?: true
   }
 
   export type SessionPlayerStatsMinAggregateInputType = {
@@ -14299,6 +14377,8 @@ export namespace Prisma {
     sessionId?: true
     player?: true
     plays?: true
+    totalPoints?: true
+    pointDiff?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -14308,6 +14388,8 @@ export namespace Prisma {
     sessionId?: true
     player?: true
     plays?: true
+    totalPoints?: true
+    pointDiff?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -14317,6 +14399,8 @@ export namespace Prisma {
     sessionId?: true
     player?: true
     plays?: true
+    totalPoints?: true
+    pointDiff?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -14413,6 +14497,8 @@ export namespace Prisma {
     sessionId: string
     player: string
     plays: number
+    totalPoints: number
+    pointDiff: number
     createdAt: Date
     updatedAt: Date
     _count: SessionPlayerStatsCountAggregateOutputType | null
@@ -14441,6 +14527,8 @@ export namespace Prisma {
     sessionId?: boolean
     player?: boolean
     plays?: boolean
+    totalPoints?: boolean
+    pointDiff?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["sessionPlayerStats"]>
@@ -14450,6 +14538,8 @@ export namespace Prisma {
     sessionId?: boolean
     player?: boolean
     plays?: boolean
+    totalPoints?: boolean
+    pointDiff?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["sessionPlayerStats"]>
@@ -14459,6 +14549,8 @@ export namespace Prisma {
     sessionId?: boolean
     player?: boolean
     plays?: boolean
+    totalPoints?: boolean
+    pointDiff?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["sessionPlayerStats"]>
@@ -14468,11 +14560,13 @@ export namespace Prisma {
     sessionId?: boolean
     player?: boolean
     plays?: boolean
+    totalPoints?: boolean
+    pointDiff?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type SessionPlayerStatsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "sessionId" | "player" | "plays" | "createdAt" | "updatedAt", ExtArgs["result"]["sessionPlayerStats"]>
+  export type SessionPlayerStatsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "sessionId" | "player" | "plays" | "totalPoints" | "pointDiff" | "createdAt" | "updatedAt", ExtArgs["result"]["sessionPlayerStats"]>
 
   export type $SessionPlayerStatsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "SessionPlayerStats"
@@ -14482,6 +14576,8 @@ export namespace Prisma {
       sessionId: string
       player: string
       plays: number
+      totalPoints: number
+      pointDiff: number
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["sessionPlayerStats"]>
@@ -14911,6 +15007,8 @@ export namespace Prisma {
     readonly sessionId: FieldRef<"SessionPlayerStats", 'String'>
     readonly player: FieldRef<"SessionPlayerStats", 'String'>
     readonly plays: FieldRef<"SessionPlayerStats", 'Int'>
+    readonly totalPoints: FieldRef<"SessionPlayerStats", 'Int'>
+    readonly pointDiff: FieldRef<"SessionPlayerStats", 'Int'>
     readonly createdAt: FieldRef<"SessionPlayerStats", 'DateTime'>
     readonly updatedAt: FieldRef<"SessionPlayerStats", 'DateTime'>
   }
@@ -24473,6 +24571,8 @@ export namespace Prisma {
     teamAPlayers: 'teamAPlayers',
     teamBPlayers: 'teamBPlayers',
     winner: 'winner',
+    teamAScore: 'teamAScore',
+    teamBScore: 'teamBScore',
     createdAt: 'createdAt'
   };
 
@@ -24507,6 +24607,8 @@ export namespace Prisma {
     sessionId: 'sessionId',
     player: 'player',
     plays: 'plays',
+    totalPoints: 'totalPoints',
+    pointDiff: 'pointDiff',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -25333,6 +25435,8 @@ export namespace Prisma {
     teamAPlayers?: StringNullableListFilter<"Game">
     teamBPlayers?: StringNullableListFilter<"Game">
     winner?: StringNullableFilter<"Game"> | string | null
+    teamAScore?: IntNullableFilter<"Game"> | number | null
+    teamBScore?: IntNullableFilter<"Game"> | number | null
     createdAt?: DateTimeFilter<"Game"> | Date | string
     session?: XOR<SessionScalarRelationFilter, SessionWhereInput>
   }
@@ -25344,6 +25448,8 @@ export namespace Prisma {
     teamAPlayers?: SortOrder
     teamBPlayers?: SortOrder
     winner?: SortOrderInput | SortOrder
+    teamAScore?: SortOrderInput | SortOrder
+    teamBScore?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     session?: SessionOrderByWithRelationInput
   }
@@ -25358,6 +25464,8 @@ export namespace Prisma {
     teamAPlayers?: StringNullableListFilter<"Game">
     teamBPlayers?: StringNullableListFilter<"Game">
     winner?: StringNullableFilter<"Game"> | string | null
+    teamAScore?: IntNullableFilter<"Game"> | number | null
+    teamBScore?: IntNullableFilter<"Game"> | number | null
     createdAt?: DateTimeFilter<"Game"> | Date | string
     session?: XOR<SessionScalarRelationFilter, SessionWhereInput>
   }, "id" | "slug">
@@ -25369,10 +25477,14 @@ export namespace Prisma {
     teamAPlayers?: SortOrder
     teamBPlayers?: SortOrder
     winner?: SortOrderInput | SortOrder
+    teamAScore?: SortOrderInput | SortOrder
+    teamBScore?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: GameCountOrderByAggregateInput
+    _avg?: GameAvgOrderByAggregateInput
     _max?: GameMaxOrderByAggregateInput
     _min?: GameMinOrderByAggregateInput
+    _sum?: GameSumOrderByAggregateInput
   }
 
   export type GameScalarWhereWithAggregatesInput = {
@@ -25385,6 +25497,8 @@ export namespace Prisma {
     teamAPlayers?: StringNullableListFilter<"Game">
     teamBPlayers?: StringNullableListFilter<"Game">
     winner?: StringNullableWithAggregatesFilter<"Game"> | string | null
+    teamAScore?: IntNullableWithAggregatesFilter<"Game"> | number | null
+    teamBScore?: IntNullableWithAggregatesFilter<"Game"> | number | null
     createdAt?: DateTimeWithAggregatesFilter<"Game"> | Date | string
   }
 
@@ -25512,6 +25626,8 @@ export namespace Prisma {
     sessionId?: StringFilter<"SessionPlayerStats"> | string
     player?: StringFilter<"SessionPlayerStats"> | string
     plays?: IntFilter<"SessionPlayerStats"> | number
+    totalPoints?: IntFilter<"SessionPlayerStats"> | number
+    pointDiff?: IntFilter<"SessionPlayerStats"> | number
     createdAt?: DateTimeFilter<"SessionPlayerStats"> | Date | string
     updatedAt?: DateTimeFilter<"SessionPlayerStats"> | Date | string
   }
@@ -25521,6 +25637,8 @@ export namespace Prisma {
     sessionId?: SortOrder
     player?: SortOrder
     plays?: SortOrder
+    totalPoints?: SortOrder
+    pointDiff?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -25534,6 +25652,8 @@ export namespace Prisma {
     sessionId?: StringFilter<"SessionPlayerStats"> | string
     player?: StringFilter<"SessionPlayerStats"> | string
     plays?: IntFilter<"SessionPlayerStats"> | number
+    totalPoints?: IntFilter<"SessionPlayerStats"> | number
+    pointDiff?: IntFilter<"SessionPlayerStats"> | number
     createdAt?: DateTimeFilter<"SessionPlayerStats"> | Date | string
     updatedAt?: DateTimeFilter<"SessionPlayerStats"> | Date | string
   }, "id" | "sessionId_player">
@@ -25543,6 +25663,8 @@ export namespace Prisma {
     sessionId?: SortOrder
     player?: SortOrder
     plays?: SortOrder
+    totalPoints?: SortOrder
+    pointDiff?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: SessionPlayerStatsCountOrderByAggregateInput
@@ -25560,6 +25682,8 @@ export namespace Prisma {
     sessionId?: StringWithAggregatesFilter<"SessionPlayerStats"> | string
     player?: StringWithAggregatesFilter<"SessionPlayerStats"> | string
     plays?: IntWithAggregatesFilter<"SessionPlayerStats"> | number
+    totalPoints?: IntWithAggregatesFilter<"SessionPlayerStats"> | number
+    pointDiff?: IntWithAggregatesFilter<"SessionPlayerStats"> | number
     createdAt?: DateTimeWithAggregatesFilter<"SessionPlayerStats"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"SessionPlayerStats"> | Date | string
   }
@@ -26710,6 +26834,8 @@ export namespace Prisma {
     teamAPlayers?: GameCreateteamAPlayersInput | string[]
     teamBPlayers?: GameCreateteamBPlayersInput | string[]
     winner?: string | null
+    teamAScore?: number | null
+    teamBScore?: number | null
     createdAt?: Date | string
     session: SessionCreateNestedOneWithoutGamesInput
   }
@@ -26721,6 +26847,8 @@ export namespace Prisma {
     teamAPlayers?: GameCreateteamAPlayersInput | string[]
     teamBPlayers?: GameCreateteamBPlayersInput | string[]
     winner?: string | null
+    teamAScore?: number | null
+    teamBScore?: number | null
     createdAt?: Date | string
   }
 
@@ -26730,6 +26858,8 @@ export namespace Prisma {
     teamAPlayers?: GameUpdateteamAPlayersInput | string[]
     teamBPlayers?: GameUpdateteamBPlayersInput | string[]
     winner?: NullableStringFieldUpdateOperationsInput | string | null
+    teamAScore?: NullableIntFieldUpdateOperationsInput | number | null
+    teamBScore?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     session?: SessionUpdateOneRequiredWithoutGamesNestedInput
   }
@@ -26741,6 +26871,8 @@ export namespace Prisma {
     teamAPlayers?: GameUpdateteamAPlayersInput | string[]
     teamBPlayers?: GameUpdateteamBPlayersInput | string[]
     winner?: NullableStringFieldUpdateOperationsInput | string | null
+    teamAScore?: NullableIntFieldUpdateOperationsInput | number | null
+    teamBScore?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -26751,6 +26883,8 @@ export namespace Prisma {
     teamAPlayers?: GameCreateteamAPlayersInput | string[]
     teamBPlayers?: GameCreateteamBPlayersInput | string[]
     winner?: string | null
+    teamAScore?: number | null
+    teamBScore?: number | null
     createdAt?: Date | string
   }
 
@@ -26760,6 +26894,8 @@ export namespace Prisma {
     teamAPlayers?: GameUpdateteamAPlayersInput | string[]
     teamBPlayers?: GameUpdateteamBPlayersInput | string[]
     winner?: NullableStringFieldUpdateOperationsInput | string | null
+    teamAScore?: NullableIntFieldUpdateOperationsInput | number | null
+    teamBScore?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -26770,6 +26906,8 @@ export namespace Prisma {
     teamAPlayers?: GameUpdateteamAPlayersInput | string[]
     teamBPlayers?: GameUpdateteamBPlayersInput | string[]
     winner?: NullableStringFieldUpdateOperationsInput | string | null
+    teamAScore?: NullableIntFieldUpdateOperationsInput | number | null
+    teamBScore?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -26896,6 +27034,8 @@ export namespace Prisma {
     sessionId: string
     player: string
     plays?: number
+    totalPoints?: number
+    pointDiff?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -26905,6 +27045,8 @@ export namespace Prisma {
     sessionId: string
     player: string
     plays?: number
+    totalPoints?: number
+    pointDiff?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -26914,6 +27056,8 @@ export namespace Prisma {
     sessionId?: StringFieldUpdateOperationsInput | string
     player?: StringFieldUpdateOperationsInput | string
     plays?: IntFieldUpdateOperationsInput | number
+    totalPoints?: IntFieldUpdateOperationsInput | number
+    pointDiff?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -26923,6 +27067,8 @@ export namespace Prisma {
     sessionId?: StringFieldUpdateOperationsInput | string
     player?: StringFieldUpdateOperationsInput | string
     plays?: IntFieldUpdateOperationsInput | number
+    totalPoints?: IntFieldUpdateOperationsInput | number
+    pointDiff?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -26932,6 +27078,8 @@ export namespace Prisma {
     sessionId: string
     player: string
     plays?: number
+    totalPoints?: number
+    pointDiff?: number
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -26941,6 +27089,8 @@ export namespace Prisma {
     sessionId?: StringFieldUpdateOperationsInput | string
     player?: StringFieldUpdateOperationsInput | string
     plays?: IntFieldUpdateOperationsInput | number
+    totalPoints?: IntFieldUpdateOperationsInput | number
+    pointDiff?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -26950,6 +27100,8 @@ export namespace Prisma {
     sessionId?: StringFieldUpdateOperationsInput | string
     player?: StringFieldUpdateOperationsInput | string
     plays?: IntFieldUpdateOperationsInput | number
+    totalPoints?: IntFieldUpdateOperationsInput | number
+    pointDiff?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -28146,6 +28298,17 @@ export namespace Prisma {
     isEmpty?: boolean
   }
 
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
   export type GameCountOrderByAggregateInput = {
     id?: SortOrder
     slug?: SortOrder
@@ -28153,7 +28316,14 @@ export namespace Prisma {
     teamAPlayers?: SortOrder
     teamBPlayers?: SortOrder
     winner?: SortOrder
+    teamAScore?: SortOrder
+    teamBScore?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type GameAvgOrderByAggregateInput = {
+    teamAScore?: SortOrder
+    teamBScore?: SortOrder
   }
 
   export type GameMaxOrderByAggregateInput = {
@@ -28161,6 +28331,8 @@ export namespace Prisma {
     slug?: SortOrder
     sessionId?: SortOrder
     winner?: SortOrder
+    teamAScore?: SortOrder
+    teamBScore?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -28169,7 +28341,30 @@ export namespace Prisma {
     slug?: SortOrder
     sessionId?: SortOrder
     winner?: SortOrder
+    teamAScore?: SortOrder
+    teamBScore?: SortOrder
     createdAt?: SortOrder
+  }
+
+  export type GameSumOrderByAggregateInput = {
+    teamAScore?: SortOrder
+    teamBScore?: SortOrder
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
   export type PairStatTeamIdPlayerAPlayerBCompoundUniqueInput = {
@@ -28255,12 +28450,16 @@ export namespace Prisma {
     sessionId?: SortOrder
     player?: SortOrder
     plays?: SortOrder
+    totalPoints?: SortOrder
+    pointDiff?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type SessionPlayerStatsAvgOrderByAggregateInput = {
     plays?: SortOrder
+    totalPoints?: SortOrder
+    pointDiff?: SortOrder
   }
 
   export type SessionPlayerStatsMaxOrderByAggregateInput = {
@@ -28268,6 +28467,8 @@ export namespace Prisma {
     sessionId?: SortOrder
     player?: SortOrder
     plays?: SortOrder
+    totalPoints?: SortOrder
+    pointDiff?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -28277,12 +28478,16 @@ export namespace Prisma {
     sessionId?: SortOrder
     player?: SortOrder
     plays?: SortOrder
+    totalPoints?: SortOrder
+    pointDiff?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type SessionPlayerStatsSumOrderByAggregateInput = {
     plays?: SortOrder
+    totalPoints?: SortOrder
+    pointDiff?: SortOrder
   }
 
   export type StageListRelationFilter = {
@@ -29463,6 +29668,14 @@ export namespace Prisma {
     push?: string | string[]
   }
 
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
   export type SessionUpdateOneRequiredWithoutGamesNestedInput = {
     create?: XOR<SessionCreateWithoutGamesInput, SessionUncheckedCreateWithoutGamesInput>
     connectOrCreate?: SessionCreateOrConnectWithoutGamesInput
@@ -30211,6 +30424,33 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedBoolFilter<$PrismaModel>
     _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
   export type NestedEnumWinningTeamNullableFilter<$PrismaModel = never> = {
@@ -31503,6 +31743,8 @@ export namespace Prisma {
     teamAPlayers?: GameCreateteamAPlayersInput | string[]
     teamBPlayers?: GameCreateteamBPlayersInput | string[]
     winner?: string | null
+    teamAScore?: number | null
+    teamBScore?: number | null
     createdAt?: Date | string
   }
 
@@ -31512,6 +31754,8 @@ export namespace Prisma {
     teamAPlayers?: GameCreateteamAPlayersInput | string[]
     teamBPlayers?: GameCreateteamBPlayersInput | string[]
     winner?: string | null
+    teamAScore?: number | null
+    teamBScore?: number | null
     createdAt?: Date | string
   }
 
@@ -31606,6 +31850,8 @@ export namespace Prisma {
     teamAPlayers?: StringNullableListFilter<"Game">
     teamBPlayers?: StringNullableListFilter<"Game">
     winner?: StringNullableFilter<"Game"> | string | null
+    teamAScore?: IntNullableFilter<"Game"> | number | null
+    teamBScore?: IntNullableFilter<"Game"> | number | null
     createdAt?: DateTimeFilter<"Game"> | Date | string
   }
 
@@ -33691,6 +33937,8 @@ export namespace Prisma {
     teamAPlayers?: GameCreateteamAPlayersInput | string[]
     teamBPlayers?: GameCreateteamBPlayersInput | string[]
     winner?: string | null
+    teamAScore?: number | null
+    teamBScore?: number | null
     createdAt?: Date | string
   }
 
@@ -33718,6 +33966,8 @@ export namespace Prisma {
     teamAPlayers?: GameUpdateteamAPlayersInput | string[]
     teamBPlayers?: GameUpdateteamBPlayersInput | string[]
     winner?: NullableStringFieldUpdateOperationsInput | string | null
+    teamAScore?: NullableIntFieldUpdateOperationsInput | number | null
+    teamBScore?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -33727,6 +33977,8 @@ export namespace Prisma {
     teamAPlayers?: GameUpdateteamAPlayersInput | string[]
     teamBPlayers?: GameUpdateteamBPlayersInput | string[]
     winner?: NullableStringFieldUpdateOperationsInput | string | null
+    teamAScore?: NullableIntFieldUpdateOperationsInput | number | null
+    teamBScore?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -33736,6 +33988,8 @@ export namespace Prisma {
     teamAPlayers?: GameUpdateteamAPlayersInput | string[]
     teamBPlayers?: GameUpdateteamBPlayersInput | string[]
     winner?: NullableStringFieldUpdateOperationsInput | string | null
+    teamAScore?: NullableIntFieldUpdateOperationsInput | number | null
+    teamBScore?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

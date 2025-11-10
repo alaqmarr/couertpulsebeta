@@ -220,7 +220,9 @@ model Game {
   sessionId    String
   teamAPlayers String[]
   teamBPlayers String[]
-  winner       String? // "A" | "B" | null
+  winner       String? // "A" | "B" | "DRAW"
+  teamAScore   Int?     @default(0)
+  teamBScore   Int?     @default(0)
   createdAt    DateTime @default(now())
 
   session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
@@ -265,12 +267,14 @@ model SessionPairHistory {
 }
 
 model SessionPlayerStats {
-  id        String   @id @default(cuid())
-  sessionId String
-  player    String
-  plays     Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  sessionId   String
+  player      String
+  plays       Int      @default(0)
+  totalPoints Int      @default(0)
+  pointDiff   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@unique([sessionId, player])
 }

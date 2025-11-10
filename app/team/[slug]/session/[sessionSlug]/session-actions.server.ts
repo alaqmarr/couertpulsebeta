@@ -4,6 +4,128 @@ import { prisma } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/clerk";
 import { revalidatePath } from "next/cache";
 
+export async function submitGameScoreAction(
+  teamSlug: string,
+  sessionSlug: string,
+  gameSlug: string,
+  teamAScore: number,
+  teamBScore: number
+) {
+  const user = await getOrCreateUser();
+  if (!user) throw new Error("Unauthorized");
+
+  // fetch game + session + team info
+  const game = await prisma.game.findUnique({
+    where: { slug: gameSlug },
+    include: { session: { include: { team: true } } },
+  });
+
+  if (!game) throw new Error("Game not found");
+  if (game.session.team.ownerId !== user.id)
+    throw new Error("Only the team owner can submit scores.");
+  if (game.winner) throw new Error("Scores already finalized for this match.");
+
+  // compute winner / diff
+  const winner: "A" | "B" | "DRAW" =
+    teamAScore > teamBScore ? "A" : teamBScore > teamAScore ? "B" : "DRAW";
+  const diff = Math.abs(teamAScore - teamBScore);
+
+  const sessionId = game.sessionId;
+  const teamId = game.session.teamId;
+
+  await prisma.$transaction(async (tx) => {
+    // 1) Update game with scores + winner (atomic)
+    await tx.game.update({
+      where: { slug: gameSlug },
+      data: { teamAScore, teamBScore, winner },
+    });
+
+    // 2) Update pair stats (doubles) using upsert
+    const upsertPairStat = async (emails: string[], didWin: boolean) => {
+      if (emails.length !== 2) return;
+      const [a, b] = emails.slice().sort(); // stable order for unique key
+      await tx.pairStat.upsert({
+        where: { teamId_playerA_playerB: { teamId, playerA: a, playerB: b } },
+        update: {
+          plays: { increment: 1 },
+          wins: { increment: didWin ? 1 : 0 },
+        },
+        create: {
+          teamId,
+          playerA: a,
+          playerB: b,
+          plays: 1,
+          wins: didWin ? 1 : 0,
+        },
+      });
+    };
+
+    if (game.teamAPlayers.length === 2) {
+      await upsertPairStat(game.teamAPlayers, winner === "A");
+    }
+    if (game.teamBPlayers.length === 2) {
+      await upsertPairStat(game.teamBPlayers, winner === "B");
+    }
+
+    // 3) Update SessionPlayerStats (use upsert so missing rows are created)
+    //    Assumes SessionPlayerStats has fields: plays, totalPoints (optional), pointDiff (optional)
+    const updatePlayerStat = async (
+      email: string,
+      pointsScored: number,
+      diffForPlayer: number
+    ) => {
+      await tx.sessionPlayerStats.upsert({
+        where: { sessionId_player: { sessionId, player: email } },
+        update: {
+          plays: { increment: 1 },
+          // only update these if you added them to the model
+          ...(typeof pointsScored === "number"
+            ? { totalPoints: { increment: pointsScored } }
+            : {}),
+          ...(typeof diffForPlayer === "number"
+            ? { pointDiff: { increment: diffForPlayer } }
+            : {}),
+        },
+        create: {
+          sessionId,
+          player: email,
+          plays: 1,
+          // create initial values if columns exist
+          ...(typeof pointsScored === "number"
+            ? { totalPoints: pointsScored }
+            : {}),
+          ...(typeof diffForPlayer === "number"
+            ? { pointDiff: diffForPlayer }
+            : {}),
+        },
+      });
+    };
+
+    const diffForA = teamAScore - teamBScore;
+    const diffForB = teamBScore - teamAScore;
+
+    for (const email of game.teamAPlayers) {
+      await updatePlayerStat(email, teamAScore, diffForA);
+    }
+    for (const email of game.teamBPlayers) {
+      await updatePlayerStat(email, teamBScore, diffForB);
+    }
+
+    // 4) Optionally update team-level aggregates (gamesPlayed/gamesWon)
+    await tx.team.update({
+      where: { id: teamId },
+      data: {
+        gamesPlayed: { increment: 1 },
+        gamesWon:
+          winner === "A" || winner === "B"
+            ? { increment: winner === "A" ? 1 : winner === "B" ? 1 : 0 } // careful: this is simple - better to increment appropriate counters per-team if you model them
+            : undefined,
+      },
+    });
+  });
+
+  revalidatePath(`/team/${teamSlug}/session/${sessionSlug}`);
+}
 /* =========================================================
    CREATE GAME (UI-Controlled Teams)
    ========================================================= */
@@ -73,164 +195,172 @@ export async function randomizeTeamsAction(
   const user = await getOrCreateUser();
   if (!user) throw new Error("Unauthorized");
 
+  // 1️⃣ — Fetch session and validate owner
   const session = await prisma.session.findUnique({
     where: { slug: sessionSlug },
     include: {
-      team: true,
-      participants: { where: { isSelected: true }, include: { member: true } },
+      team: { select: { id: true, ownerId: true } },
+      participants: {
+        where: { isSelected: true },
+        include: { member: { select: { email: true } } },
+      },
     },
   });
-  if (!session) throw new Error("Session not found");
+
+  if (!session) throw new Error("Session not found.");
   if (session.team.ownerId !== user.id)
-    throw new Error("Only the team owner can randomize.");
+    throw new Error("Only the team owner can randomize matches.");
 
-  const sessionId = session.id;
+  // 2️⃣ — Validate available players
   const players = session.participants.map((p) => p.member.email);
-  const totalPlayers = players.length;
+  if (players.length < 2)
+    throw new Error("At least two players are required to randomize.");
 
-  if (totalPlayers < 2)
-    throw new Error("Need at least 2 players to create a match.");
+  const requiredPlayers = matchType === "SINGLES" ? 2 : 4;
+  if (players.length < requiredPlayers)
+    throw new Error(
+      `Insufficient players for ${matchType}. Need ${requiredPlayers}, have ${players.length}.`
+    );
 
-  const required = matchType === "SINGLES" ? 2 : 4;
-  if (totalPlayers < required)
-    throw new Error(`Need ${required} players, have ${totalPlayers}.`);
+  // 3️⃣ — Atomic transaction to ensure consistency
+  await prisma.$transaction(async (tx) => {
+    const sessionId = session.id;
 
-  // Fetch prior data
-  const usedPairs = await prisma.sessionPairHistory.findMany({
-    where: { sessionId },
-  });
-  const usedSet = new Set(
-    usedPairs.map((p) => [p.playerA, p.playerB].sort().join("|"))
-  );
+    // --- Preload data ---
+    const [usedPairs, playStats] = await Promise.all([
+      tx.sessionPairHistory.findMany({ where: { sessionId } }),
+      tx.sessionPlayerStats.findMany({ where: { sessionId } }),
+    ]);
 
-  const playStats = await prisma.sessionPlayerStats.findMany({
-    where: { sessionId },
-  });
-  const playCountMap = new Map(playStats.map((p) => [p.player, p.plays]));
+    const usedSet = new Set(
+      usedPairs.map((p) => [p.playerA, p.playerB].sort().join("|"))
+    );
+    const playCount = new Map(playStats.map((p) => [p.player, p.plays]));
 
-  // Initialize missing player stats
-  for (const player of players) {
-    if (!playCountMap.has(player)) {
-      await prisma.sessionPlayerStats.create({
-        data: { sessionId, player, plays: 0 },
+    // Initialize missing stats
+    for (const player of players) {
+      if (!playCount.has(player)) {
+        await tx.sessionPlayerStats.create({
+          data: { sessionId, player, plays: 0 },
+        });
+        playCount.set(player, 0);
+      }
+    }
+
+    // 4️⃣ — Determine active vs resting players (if uneven)
+    const minPlays = Math.min(...playCount.values());
+    const sortedPlayers = [...players].sort(
+      (a, b) => playCount.get(a)! - playCount.get(b)!
+    );
+
+    const activePlayers =
+      players.length % requiredPlayers === 0
+        ? [...players]
+        : sortedPlayers.filter(
+            (p) => playCount.get(p)! > minPlays // leave out least-played one
+          );
+
+    if (activePlayers.length < requiredPlayers)
+      throw new Error(
+        `Not enough eligible players to form a complete ${matchType} match.`
+      );
+
+    // 5️⃣ — Random fair pairing
+    let teamAPlayers: string[];
+    let teamBPlayers: string[];
+
+    if (matchType === "SINGLES") {
+      // Generate all possible unique matchups
+      const combos: [string, string][] = [];
+      for (let i = 0; i < activePlayers.length; i++) {
+        for (let j = i + 1; j < activePlayers.length; j++) {
+          combos.push([activePlayers[i], activePlayers[j]]);
+        }
+      }
+
+      // Filter out used ones
+      let available = combos.filter(
+        (pair) => !usedSet.has(pair.sort().join("|"))
+      );
+      if (available.length === 0) {
+        // Reset cycle if exhausted
+        await tx.sessionPairHistory.deleteMany({ where: { sessionId } });
+        available = combos;
+      }
+
+      const chosen = available[Math.floor(Math.random() * available.length)];
+      teamAPlayers = [chosen[0]];
+      teamBPlayers = [chosen[1]];
+
+      await tx.sessionPairHistory.create({
+        data: { sessionId, playerA: chosen[0], playerB: chosen[1] },
       });
-      playCountMap.set(player, 0);
-    }
-  }
+    } else {
+      // DOUBLES pairing
+      if (activePlayers.length < 4)
+        throw new Error("At least 4 players required for doubles pairing.");
 
-  // Determine who plays and who rests this round (if odd count)
-  const minPlays = Math.min(...playCountMap.values());
-  const availablePlayers = [...players].sort((a, b) => {
-    return playCountMap.get(a)! - playCountMap.get(b)!;
+      const pairs: [string, string][] = [];
+      for (let i = 0; i < activePlayers.length; i++) {
+        for (let j = i + 1; j < activePlayers.length; j++) {
+          pairs.push([activePlayers[i], activePlayers[j]]);
+        }
+      }
+
+      let availablePairs = pairs.filter(
+        (p) => !usedSet.has(p.sort().join("|"))
+      );
+      if (availablePairs.length === 0) {
+        await tx.sessionPairHistory.deleteMany({ where: { sessionId } });
+        availablePairs = pairs;
+      }
+
+      const pairA = availablePairs[Math.floor(Math.random() * availablePairs.length)];
+      const remaining = activePlayers.filter((p) => !pairA.includes(p));
+      if (remaining.length < 2)
+        throw new Error("Not enough remaining players to form opponent team.");
+
+      const pairB = remaining.sort(() => Math.random() - 0.5).slice(0, 2);
+
+      teamAPlayers = pairA;
+      teamBPlayers = pairB;
+
+      await tx.sessionPairHistory.create({
+        data: { sessionId, playerA: pairA[0], playerB: pairA[1] },
+      });
+      await tx.sessionPairHistory.create({
+        data: { sessionId, playerA: pairB[0], playerB: pairB[1] },
+      });
+    }
+
+    // 6️⃣ — Enforce unique team members
+    const overlap = teamAPlayers.some((p) => teamBPlayers.includes(p));
+    if (overlap) throw new Error("Player overlap between Team A and Team B.");
+
+    // 7️⃣ — Update session stats (upsert safe)
+    for (const p of activePlayers) {
+      await tx.sessionPlayerStats.upsert({
+        where: { sessionId_player: { sessionId, player: p } },
+        update: { plays: { increment: 1 } },
+        create: { sessionId, player: p, plays: 1 },
+      });
+    }
+
+    // 8️⃣ — Persist game atomically
+    await tx.game.create({
+      data: {
+        slug: `${sessionSlug}-rnd-${Date.now()}`,
+        sessionId,
+        teamAPlayers,
+        teamBPlayers,
+      },
+    });
   });
 
-  let activePlayers: string[];
-  let restingPlayer: string | null = null;
-
-  if (totalPlayers % required !== 0) {
-    restingPlayer = availablePlayers.find(
-      (p) => playCountMap.get(p)! === minPlays
-    )!;
-    activePlayers = players.filter((p) => p !== restingPlayer);
-  } else {
-    activePlayers = players;
-  }
-
-  const shuffled = [...activePlayers].sort(() => Math.random() - 0.5);
-
-  let teamAPlayers: string[];
-  let teamBPlayers: string[];
-
-  if (matchType === "SINGLES") {
-    // Find a new matchup not seen before
-    const allMatchups: [string, string][] = [];
-    for (let i = 0; i < activePlayers.length; i++) {
-      for (let j = i + 1; j < activePlayers.length; j++) {
-        allMatchups.push([activePlayers[i], activePlayers[j]]);
-      }
-    }
-
-    const remaining = allMatchups.filter(
-      (m) => !usedSet.has(m.sort().join("|"))
-    );
-    let chosen: [string, string];
-
-    if (remaining.length > 0) {
-      chosen = remaining[Math.floor(Math.random() * remaining.length)];
-    } else {
-      // Reset when all combos used
-      await prisma.sessionPairHistory.deleteMany({ where: { sessionId } });
-      chosen = allMatchups[Math.floor(Math.random() * allMatchups.length)];
-    }
-
-    teamAPlayers = [chosen[0]];
-    teamBPlayers = [chosen[1]];
-
-    // Record pairing
-    await prisma.sessionPairHistory.create({
-      data: { sessionId, playerA: chosen[0], playerB: chosen[1] },
-    });
-  } else {
-    // DOUBLES fair pairing
-    const allPairs: [string, string][] = [];
-    for (let i = 0; i < activePlayers.length; i++) {
-      for (let j = i + 1; j < activePlayers.length; j++) {
-        allPairs.push([activePlayers[i], activePlayers[j]]);
-      }
-    }
-
-    const remaining = allPairs.filter(
-      (pair) => !usedSet.has(pair.sort().join("|"))
-    );
-    let pairA: [string, string];
-
-    if (remaining.length > 0) {
-      pairA = remaining[Math.floor(Math.random() * remaining.length)];
-    } else {
-      await prisma.sessionPairHistory.deleteMany({ where: { sessionId } });
-      pairA = allPairs[Math.floor(Math.random() * allPairs.length)];
-    }
-
-    const remainingForOpponents = activePlayers.filter(
-      (p) => !pairA.includes(p)
-    );
-    const shuffledOpponents = [...remainingForOpponents].sort(
-      () => Math.random() - 0.5
-    );
-    const pairB = shuffledOpponents.slice(0, 2);
-
-    teamAPlayers = pairA;
-    teamBPlayers = pairB;
-
-    // Record both pairs
-    await prisma.sessionPairHistory.create({
-      data: { sessionId, playerA: pairA[0], playerB: pairA[1] },
-    });
-    await prisma.sessionPairHistory.create({
-      data: { sessionId, playerA: pairB[0], playerB: pairB[1] },
-    });
-  }
-
-  // Update play counts
-  for (const p of activePlayers) {
-    await prisma.sessionPlayerStats.update({
-      where: { sessionId_player: { sessionId, player: p } },
-      data: { plays: { increment: 1 } },
-    });
-  }
-
-  // Create game
-  await prisma.game.create({
-    data: {
-      slug: `${sessionSlug}-balanced-${Date.now()}`,
-      sessionId,
-      teamAPlayers,
-      teamBPlayers,
-    },
-  });
-
+  // 9️⃣ — Revalidate path after transaction success
   revalidatePath(`/team/${teamSlug}/session/${sessionSlug}`);
 }
+
 
 /* =========================================================
    SET WINNER + Update Pair Stats

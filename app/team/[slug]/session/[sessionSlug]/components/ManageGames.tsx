@@ -20,6 +20,7 @@ import {
     createGameAction,
     randomizeTeamsAction,
     setGameWinnerAction,
+    submitGameScoreAction,
     togglePlayerAvailabilityAction,
 } from "../session-actions.server";
 
@@ -33,6 +34,8 @@ interface ManageGamesProps {
             slug: string;
             teamAPlayers: string[];
             teamBPlayers: string[];
+            teamAScore: number | 0;
+            teamBScore: number | 0;
             winner: string | null;
         }[];
         team: {
@@ -56,6 +59,10 @@ export default function ManageGames({
     sessionSlug,
     isOwner,
 }: ManageGamesProps) {
+    const [loadingGames, setLoadingGames] = useState<Record<string, boolean>>({});
+
+    const [scores, setScores] = useState<Record<string, { a: number; b: number }>>({});
+
     const [isPending, startTransition] = useTransition();
     const [isRandomizing, setRandomizing] = useState(false);
 
@@ -355,36 +362,107 @@ export default function ManageGames({
                                                 {g.teamBPlayers.map(getPlayerName).join(" & ")}
                                             </p>
                                             <p className="text-xs text-muted-foreground">
-                                                {g.winner
-                                                    ? `Winner: Team ${g.winner}`
-                                                    : "Awaiting result..."}
+                                                {g.winner ? (
+                                                    <>
+                                                        Winner:{" "}
+                                                        <span className="font-semibold text-primary">
+                                                            Team {g.winner}
+                                                        </span>
+                                                        {typeof g.teamAScore === "number" &&
+                                                            typeof g.teamBScore === "number" &&
+                                                            g.winner !== "DRAW" && (
+                                                                <> won by {Math.abs(g.teamAScore - g.teamBScore)} points</>
+                                                            )}
+                                                        {g.winner === "DRAW" && " (Draw)"}
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <span className="flex row items-center gap-1">
+                                                            <Loader2 className="w-2 h-2 animate-spin" />Awaiting result…
+                                                        </span>
+                                                    </>
+                                                )}
                                             </p>
+
                                         </div>
 
                                         {isOwner && !g.winner && (
-                                            <div className="flex gap-2 w-full sm:w-auto">
+                                            <div className="flex flex-col sm:flex-row gap-2 items-center">
+                                                <div className="flex items-center gap-2">
+                                                    <input
+                                                        defaultValue={0}
+                                                        placeholder="A"
+                                                        className="w-16 border rounded p-1 text-center"
+                                                        value={scores[g.slug]?.a ?? ""}
+                                                        onChange={(e) =>
+                                                            setScores((prev) => ({
+                                                                ...prev,
+                                                                [g.slug]: {
+                                                                    ...(prev[g.slug] || { a: 0, b: 0 }),
+                                                                    a: parseInt(e.target.value) || 0,
+                                                                },
+                                                            }))
+                                                        }
+                                                    />
+                                                    <span>:</span>
+                                                    <input
+                                                        defaultValue={0}
+                                                        placeholder="B"
+                                                        className="w-16 border rounded p-1 text-center"
+                                                        value={scores[g.slug]?.b ?? ""}
+                                                        onChange={(e) =>
+                                                            setScores((prev) => ({
+                                                                ...prev,
+                                                                [g.slug]: {
+                                                                    ...(prev[g.slug] || { a: 0, b: 0 }),
+                                                                    b: parseInt(e.target.value) || 0,
+                                                                },
+                                                            }))
+                                                        }
+                                                    />
+                                                </div>
                                                 <Button
                                                     size="sm"
-                                                    variant="outline"
-                                                    onClick={() => handleSetWinner(g.slug, "A")}
-                                                    disabled={isPending}
-                                                    className="flex-1"
+                                                    onClick={async () => {
+                                                        setLoadingGames((prev) => ({ ...prev, [g.slug]: true }));
+                                                        startTransition(async () => {
+                                                            try {
+                                                                await submitGameScoreAction(
+                                                                    teamSlug,
+                                                                    sessionSlug,
+                                                                    g.slug,
+                                                                    scores[g.slug]?.a ?? 0,
+                                                                    scores[g.slug]?.b ?? 0
+                                                                );
+                                                                toast.success("Scores submitted");
+                                                            } catch (err: any) {
+                                                                toast.error(err.message || "Error submitting score");
+                                                            } finally {
+                                                                setLoadingGames((prev) => ({ ...prev, [g.slug]: false }));
+                                                            }
+                                                        });
+                                                    }}
+                                                    disabled={
+                                                        isPending ||
+                                                        loadingGames[g.slug] ||
+                                                        scores[g.slug]?.a === undefined ||
+                                                        scores[g.slug]?.b === undefined
+                                                    }
                                                 >
-                                                    <Trophy className="w-4 h-4 mr-1.5" />
-                                                    Winner: A
+                                                    {loadingGames[g.slug] ? (
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                    ) : (
+                                                        <>
+                                                            <Trophy className="w-4 h-4 mr-1.5" />
+                                                            Confirm
+                                                        </>
+                                                    )}
                                                 </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => handleSetWinner(g.slug, "B")}
-                                                    disabled={isPending}
-                                                    className="flex-1"
-                                                >
-                                                    <Trophy className="w-4 h-4 mr-1.5" />
-                                                    Winner: B
-                                                </Button>
+
                                             </div>
                                         )}
+
+
                                     </div>
                                 ))}
                             </div>

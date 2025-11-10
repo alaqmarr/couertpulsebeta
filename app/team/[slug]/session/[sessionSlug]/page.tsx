@@ -83,7 +83,7 @@ export default async function SessionPage({
 
         {/* ---------------- TWO COLUMN LAYOUT ---------------- */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          
+
           {/* ---------------- MAIN CONTENT (Left) ---------------- */}
           <div className="lg:col-span-2 space-y-8">
             {/* ---------------- GAME MANAGEMENT ---------------- */}
@@ -100,6 +100,8 @@ export default async function SessionPage({
                     slug: g.slug,
                     teamAPlayers: g.teamAPlayers,
                     teamBPlayers: g.teamBPlayers,
+                    teamAScore: g.teamAScore || 0,
+                    teamBScore: g.teamBScore || 0,
                     winner: g.winner,
                   })),
                   team: {

@@ -202,6 +202,8 @@ exports.Prisma.GameScalarFieldEnum = {
   teamAPlayers: 'teamAPlayers',
   teamBPlayers: 'teamBPlayers',
   winner: 'winner',
+  teamAScore: 'teamAScore',
+  teamBScore: 'teamBScore',
   createdAt: 'createdAt'
 };
 
@@ -227,6 +229,8 @@ exports.Prisma.SessionPlayerStatsScalarFieldEnum = {
   sessionId: 'sessionId',
   player: 'player',
   plays: 'plays',
+  totalPoints: 'totalPoints',
+  pointDiff: 'pointDiff',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
