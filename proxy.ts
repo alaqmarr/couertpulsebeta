@@ -18,6 +18,16 @@ const PUBLIC_PATHS = [
   "/favicon.ico",
   "/robots.txt",
   "/manifest.json",
+  "/privacy",
+  "/terms",
+  "/docs", // documentation landing
+  "/docs/", // documentation landing
+  "/docs/getting-started",
+  "/docs/features",
+  "/docs/teams",
+  "/docs/sessions",
+  "/docs/leaderboards",
+  "/help",
 ];
 
 const PUBLIC_PATTERNS = [
