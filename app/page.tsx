@@ -225,13 +225,6 @@ function generatePlayerFact(
     .filter((t) => t.plays > 5) // Min 5 games to be considered
     .sort((a, b) => parseFloat(b.winRate) - parseFloat(a.winRate))[0]
 
-  if (bestTeam) {
-    facts.push({
-      icon: Users,
-      title: "Your Strongest Team",
-      text: `You're on fire with ${bestTeam.teamName}, boasting a ${bestTeam.winRate}% win rate!`,
-    })
-  }
 
   const mostPlayedTeam = [...teamStats]
     .sort((a, b) => b.plays - a.plays)[0]
