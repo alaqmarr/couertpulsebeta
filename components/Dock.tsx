@@ -7,6 +7,7 @@ import {
     SettingsIcon,
     PackageIcon,
     MailIcon,
+    HelpCircleIcon,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
@@ -40,6 +41,7 @@ const DATA = {
         { href: "/", icon: HomeIcon, label: "Home" },
         { href: "/settings", icon: SettingsIcon, label: "Settings" },
         { href: "/packages", icon: PackageIcon, label: "Packages" },
+        { href: "/help", icon: HelpCircleIcon, label: "Support" },
     ],
     contact: {
         social: {

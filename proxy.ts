@@ -36,7 +36,7 @@ const PUBLIC_PATTERNS = [
   /^\/tournament\/[^/]+\/results$/, // optional future variant
 ];
 
-export default clerkMiddleware(async (auth:any, req: NextRequest) => {
+export default clerkMiddleware(async (auth: any, req: NextRequest) => {
   const { pathname } = req.nextUrl;
 
   // 1. Skip static assets and build files
@@ -51,8 +51,9 @@ export default clerkMiddleware(async (auth:any, req: NextRequest) => {
 
   // 2. Allow public routes
   const isPublicRoute =
-    PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(path)) ||
-    PUBLIC_PATTERNS.some((pattern) => pattern.test(pathname));
+    PUBLIC_PATHS.some(
+      (path) => pathname === path || pathname.startsWith(path)
+    ) || PUBLIC_PATTERNS.some((pattern) => pattern.test(pathname));
 
   if (isPublicRoute) return NextResponse.next();
 
@@ -70,7 +71,5 @@ export default clerkMiddleware(async (auth:any, req: NextRequest) => {
 
 // 5. Limit middleware execution
 export const config = {
-  matcher: [
-    "/((?!_next|images|assets|favicon.ico|robots.txt|api/public).*)",
-  ],
+  matcher: ["/((?!_next|images|assets|favicon.ico|robots.txt|api/public).*)"],
 };
