@@ -392,6 +392,7 @@ export default function ManageGames({
                                                     <input
                                                         defaultValue={0}
                                                         placeholder="A"
+                                                        inputMode="numeric"
                                                         className="w-16 border rounded p-1 text-center"
                                                         value={scores[g.slug]?.a ?? ""}
                                                         onChange={(e) =>
@@ -408,6 +409,7 @@ export default function ManageGames({
                                                     <input
                                                         defaultValue={0}
                                                         placeholder="B"
+                                                        inputMode="numeric"
                                                         className="w-16 border rounded p-1 text-center"
                                                         value={scores[g.slug]?.b ?? ""}
                                                         onChange={(e) =>
