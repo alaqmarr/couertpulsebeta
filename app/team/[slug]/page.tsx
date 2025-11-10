@@ -57,7 +57,15 @@ export default async function TeamPage({
     const isOwner = team.ownerId === user.id;
 
     // ✅ Compute leaderboard stats for all players
-    const leaderboard = await getTeamLeaderboard(team.id);
+    // ✅ Compute and sort leaderboard stats for all players
+    let leaderboard = await getTeamLeaderboard(team.id);
+
+    // ✅ Sort: by winRate descending, then by name ascending
+    leaderboard = leaderboard.sort((a, b) => {
+        if (b.winRate !== a.winRate) return b.winRate - a.winRate;
+        return a.name.localeCompare(b.name);
+    });
+
 
     return (
         <main className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-background text-foreground p-4 md:p-6 lg:p-8">
@@ -135,7 +143,7 @@ export default async function TeamPage({
                         <Suspense fallback={<LoadingCard title="Computing Team Stats..." />}>
                             <TeamLeaderboard teamId={team.id} />
                         </Suspense>
-                        
+
 
                         {/* ---------------- SUMMARY ---------------- */}
                         <section>
