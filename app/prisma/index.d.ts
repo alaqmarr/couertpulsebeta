@@ -60,6 +60,14 @@ export type Game = $Result.DefaultSelection<Prisma.$GamePayload>
  */
 export type PairStat = $Result.DefaultSelection<Prisma.$PairStatPayload>
 /**
+ * Model SessionPairHistory
+ * *
+ *  * ============================================================
+ *  * TOURNAMENTS
+ *  * ============================================================
+ */
+export type SessionPairHistory = $Result.DefaultSelection<Prisma.$SessionPairHistoryPayload>
+/**
  * Model Tournament
  * 
  */
@@ -372,6 +380,16 @@ export class PrismaClient<
     * ```
     */
   get pairStat(): Prisma.PairStatDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.sessionPairHistory`: Exposes CRUD operations for the **SessionPairHistory** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more SessionPairHistories
+    * const sessionPairHistories = await prisma.sessionPairHistory.findMany()
+    * ```
+    */
+  get sessionPairHistory(): Prisma.SessionPairHistoryDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.tournament`: Exposes CRUD operations for the **Tournament** model.
@@ -901,6 +919,7 @@ export namespace Prisma {
     SessionParticipant: 'SessionParticipant',
     Game: 'Game',
     PairStat: 'PairStat',
+    SessionPairHistory: 'SessionPairHistory',
     Tournament: 'Tournament',
     TournamentTeam: 'TournamentTeam',
     TournamentGame: 'TournamentGame',
@@ -927,7 +946,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "clerkUser" | "user" | "team" | "teamMember" | "session" | "sessionParticipant" | "game" | "pairStat" | "tournament" | "tournamentTeam" | "tournamentGame" | "stage" | "payment" | "notification" | "activity" | "calendarEvent"
+      modelProps: "clerkUser" | "user" | "team" | "teamMember" | "session" | "sessionParticipant" | "game" | "pairStat" | "sessionPairHistory" | "tournament" | "tournamentTeam" | "tournamentGame" | "stage" | "payment" | "notification" | "activity" | "calendarEvent"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1520,6 +1539,80 @@ export namespace Prisma {
           count: {
             args: Prisma.PairStatCountArgs<ExtArgs>
             result: $Utils.Optional<PairStatCountAggregateOutputType> | number
+          }
+        }
+      }
+      SessionPairHistory: {
+        payload: Prisma.$SessionPairHistoryPayload<ExtArgs>
+        fields: Prisma.SessionPairHistoryFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.SessionPairHistoryFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionPairHistoryPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.SessionPairHistoryFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionPairHistoryPayload>
+          }
+          findFirst: {
+            args: Prisma.SessionPairHistoryFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionPairHistoryPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.SessionPairHistoryFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionPairHistoryPayload>
+          }
+          findMany: {
+            args: Prisma.SessionPairHistoryFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionPairHistoryPayload>[]
+          }
+          create: {
+            args: Prisma.SessionPairHistoryCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionPairHistoryPayload>
+          }
+          createMany: {
+            args: Prisma.SessionPairHistoryCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.SessionPairHistoryCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionPairHistoryPayload>[]
+          }
+          delete: {
+            args: Prisma.SessionPairHistoryDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionPairHistoryPayload>
+          }
+          update: {
+            args: Prisma.SessionPairHistoryUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionPairHistoryPayload>
+          }
+          deleteMany: {
+            args: Prisma.SessionPairHistoryDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.SessionPairHistoryUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.SessionPairHistoryUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionPairHistoryPayload>[]
+          }
+          upsert: {
+            args: Prisma.SessionPairHistoryUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$SessionPairHistoryPayload>
+          }
+          aggregate: {
+            args: Prisma.SessionPairHistoryAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateSessionPairHistory>
+          }
+          groupBy: {
+            args: Prisma.SessionPairHistoryGroupByArgs<ExtArgs>
+            result: $Utils.Optional<SessionPairHistoryGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.SessionPairHistoryCountArgs<ExtArgs>
+            result: $Utils.Optional<SessionPairHistoryCountAggregateOutputType> | number
           }
         }
       }
@@ -2219,6 +2312,7 @@ export namespace Prisma {
     sessionParticipant?: SessionParticipantOmit
     game?: GameOmit
     pairStat?: PairStatOmit
+    sessionPairHistory?: SessionPairHistoryOmit
     tournament?: TournamentOmit
     tournamentTeam?: TournamentTeamOmit
     tournamentGame?: TournamentGameOmit
@@ -11972,6 +12066,1001 @@ export namespace Prisma {
 
 
   /**
+   * Model SessionPairHistory
+   */
+
+  export type AggregateSessionPairHistory = {
+    _count: SessionPairHistoryCountAggregateOutputType | null
+    _min: SessionPairHistoryMinAggregateOutputType | null
+    _max: SessionPairHistoryMaxAggregateOutputType | null
+  }
+
+  export type SessionPairHistoryMinAggregateOutputType = {
+    id: string | null
+    sessionId: string | null
+    playerA: string | null
+    playerB: string | null
+    createdAt: Date | null
+  }
+
+  export type SessionPairHistoryMaxAggregateOutputType = {
+    id: string | null
+    sessionId: string | null
+    playerA: string | null
+    playerB: string | null
+    createdAt: Date | null
+  }
+
+  export type SessionPairHistoryCountAggregateOutputType = {
+    id: number
+    sessionId: number
+    playerA: number
+    playerB: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type SessionPairHistoryMinAggregateInputType = {
+    id?: true
+    sessionId?: true
+    playerA?: true
+    playerB?: true
+    createdAt?: true
+  }
+
+  export type SessionPairHistoryMaxAggregateInputType = {
+    id?: true
+    sessionId?: true
+    playerA?: true
+    playerB?: true
+    createdAt?: true
+  }
+
+  export type SessionPairHistoryCountAggregateInputType = {
+    id?: true
+    sessionId?: true
+    playerA?: true
+    playerB?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type SessionPairHistoryAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SessionPairHistory to aggregate.
+     */
+    where?: SessionPairHistoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SessionPairHistories to fetch.
+     */
+    orderBy?: SessionPairHistoryOrderByWithRelationInput | SessionPairHistoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: SessionPairHistoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SessionPairHistories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SessionPairHistories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned SessionPairHistories
+    **/
+    _count?: true | SessionPairHistoryCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: SessionPairHistoryMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: SessionPairHistoryMaxAggregateInputType
+  }
+
+  export type GetSessionPairHistoryAggregateType<T extends SessionPairHistoryAggregateArgs> = {
+        [P in keyof T & keyof AggregateSessionPairHistory]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateSessionPairHistory[P]>
+      : GetScalarType<T[P], AggregateSessionPairHistory[P]>
+  }
+
+
+
+
+  export type SessionPairHistoryGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: SessionPairHistoryWhereInput
+    orderBy?: SessionPairHistoryOrderByWithAggregationInput | SessionPairHistoryOrderByWithAggregationInput[]
+    by: SessionPairHistoryScalarFieldEnum[] | SessionPairHistoryScalarFieldEnum
+    having?: SessionPairHistoryScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: SessionPairHistoryCountAggregateInputType | true
+    _min?: SessionPairHistoryMinAggregateInputType
+    _max?: SessionPairHistoryMaxAggregateInputType
+  }
+
+  export type SessionPairHistoryGroupByOutputType = {
+    id: string
+    sessionId: string
+    playerA: string
+    playerB: string
+    createdAt: Date
+    _count: SessionPairHistoryCountAggregateOutputType | null
+    _min: SessionPairHistoryMinAggregateOutputType | null
+    _max: SessionPairHistoryMaxAggregateOutputType | null
+  }
+
+  type GetSessionPairHistoryGroupByPayload<T extends SessionPairHistoryGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<SessionPairHistoryGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof SessionPairHistoryGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], SessionPairHistoryGroupByOutputType[P]>
+            : GetScalarType<T[P], SessionPairHistoryGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type SessionPairHistorySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    sessionId?: boolean
+    playerA?: boolean
+    playerB?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["sessionPairHistory"]>
+
+  export type SessionPairHistorySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    sessionId?: boolean
+    playerA?: boolean
+    playerB?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["sessionPairHistory"]>
+
+  export type SessionPairHistorySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    sessionId?: boolean
+    playerA?: boolean
+    playerB?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["sessionPairHistory"]>
+
+  export type SessionPairHistorySelectScalar = {
+    id?: boolean
+    sessionId?: boolean
+    playerA?: boolean
+    playerB?: boolean
+    createdAt?: boolean
+  }
+
+  export type SessionPairHistoryOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "sessionId" | "playerA" | "playerB" | "createdAt", ExtArgs["result"]["sessionPairHistory"]>
+
+  export type $SessionPairHistoryPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "SessionPairHistory"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      sessionId: string
+      playerA: string
+      playerB: string
+      createdAt: Date
+    }, ExtArgs["result"]["sessionPairHistory"]>
+    composites: {}
+  }
+
+  type SessionPairHistoryGetPayload<S extends boolean | null | undefined | SessionPairHistoryDefaultArgs> = $Result.GetResult<Prisma.$SessionPairHistoryPayload, S>
+
+  type SessionPairHistoryCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<SessionPairHistoryFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: SessionPairHistoryCountAggregateInputType | true
+    }
+
+  export interface SessionPairHistoryDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['SessionPairHistory'], meta: { name: 'SessionPairHistory' } }
+    /**
+     * Find zero or one SessionPairHistory that matches the filter.
+     * @param {SessionPairHistoryFindUniqueArgs} args - Arguments to find a SessionPairHistory
+     * @example
+     * // Get one SessionPairHistory
+     * const sessionPairHistory = await prisma.sessionPairHistory.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends SessionPairHistoryFindUniqueArgs>(args: SelectSubset<T, SessionPairHistoryFindUniqueArgs<ExtArgs>>): Prisma__SessionPairHistoryClient<$Result.GetResult<Prisma.$SessionPairHistoryPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one SessionPairHistory that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {SessionPairHistoryFindUniqueOrThrowArgs} args - Arguments to find a SessionPairHistory
+     * @example
+     * // Get one SessionPairHistory
+     * const sessionPairHistory = await prisma.sessionPairHistory.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends SessionPairHistoryFindUniqueOrThrowArgs>(args: SelectSubset<T, SessionPairHistoryFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SessionPairHistoryClient<$Result.GetResult<Prisma.$SessionPairHistoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first SessionPairHistory that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionPairHistoryFindFirstArgs} args - Arguments to find a SessionPairHistory
+     * @example
+     * // Get one SessionPairHistory
+     * const sessionPairHistory = await prisma.sessionPairHistory.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends SessionPairHistoryFindFirstArgs>(args?: SelectSubset<T, SessionPairHistoryFindFirstArgs<ExtArgs>>): Prisma__SessionPairHistoryClient<$Result.GetResult<Prisma.$SessionPairHistoryPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first SessionPairHistory that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionPairHistoryFindFirstOrThrowArgs} args - Arguments to find a SessionPairHistory
+     * @example
+     * // Get one SessionPairHistory
+     * const sessionPairHistory = await prisma.sessionPairHistory.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends SessionPairHistoryFindFirstOrThrowArgs>(args?: SelectSubset<T, SessionPairHistoryFindFirstOrThrowArgs<ExtArgs>>): Prisma__SessionPairHistoryClient<$Result.GetResult<Prisma.$SessionPairHistoryPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more SessionPairHistories that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionPairHistoryFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all SessionPairHistories
+     * const sessionPairHistories = await prisma.sessionPairHistory.findMany()
+     * 
+     * // Get first 10 SessionPairHistories
+     * const sessionPairHistories = await prisma.sessionPairHistory.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const sessionPairHistoryWithIdOnly = await prisma.sessionPairHistory.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends SessionPairHistoryFindManyArgs>(args?: SelectSubset<T, SessionPairHistoryFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SessionPairHistoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a SessionPairHistory.
+     * @param {SessionPairHistoryCreateArgs} args - Arguments to create a SessionPairHistory.
+     * @example
+     * // Create one SessionPairHistory
+     * const SessionPairHistory = await prisma.sessionPairHistory.create({
+     *   data: {
+     *     // ... data to create a SessionPairHistory
+     *   }
+     * })
+     * 
+     */
+    create<T extends SessionPairHistoryCreateArgs>(args: SelectSubset<T, SessionPairHistoryCreateArgs<ExtArgs>>): Prisma__SessionPairHistoryClient<$Result.GetResult<Prisma.$SessionPairHistoryPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many SessionPairHistories.
+     * @param {SessionPairHistoryCreateManyArgs} args - Arguments to create many SessionPairHistories.
+     * @example
+     * // Create many SessionPairHistories
+     * const sessionPairHistory = await prisma.sessionPairHistory.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends SessionPairHistoryCreateManyArgs>(args?: SelectSubset<T, SessionPairHistoryCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many SessionPairHistories and returns the data saved in the database.
+     * @param {SessionPairHistoryCreateManyAndReturnArgs} args - Arguments to create many SessionPairHistories.
+     * @example
+     * // Create many SessionPairHistories
+     * const sessionPairHistory = await prisma.sessionPairHistory.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many SessionPairHistories and only return the `id`
+     * const sessionPairHistoryWithIdOnly = await prisma.sessionPairHistory.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends SessionPairHistoryCreateManyAndReturnArgs>(args?: SelectSubset<T, SessionPairHistoryCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SessionPairHistoryPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a SessionPairHistory.
+     * @param {SessionPairHistoryDeleteArgs} args - Arguments to delete one SessionPairHistory.
+     * @example
+     * // Delete one SessionPairHistory
+     * const SessionPairHistory = await prisma.sessionPairHistory.delete({
+     *   where: {
+     *     // ... filter to delete one SessionPairHistory
+     *   }
+     * })
+     * 
+     */
+    delete<T extends SessionPairHistoryDeleteArgs>(args: SelectSubset<T, SessionPairHistoryDeleteArgs<ExtArgs>>): Prisma__SessionPairHistoryClient<$Result.GetResult<Prisma.$SessionPairHistoryPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one SessionPairHistory.
+     * @param {SessionPairHistoryUpdateArgs} args - Arguments to update one SessionPairHistory.
+     * @example
+     * // Update one SessionPairHistory
+     * const sessionPairHistory = await prisma.sessionPairHistory.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends SessionPairHistoryUpdateArgs>(args: SelectSubset<T, SessionPairHistoryUpdateArgs<ExtArgs>>): Prisma__SessionPairHistoryClient<$Result.GetResult<Prisma.$SessionPairHistoryPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more SessionPairHistories.
+     * @param {SessionPairHistoryDeleteManyArgs} args - Arguments to filter SessionPairHistories to delete.
+     * @example
+     * // Delete a few SessionPairHistories
+     * const { count } = await prisma.sessionPairHistory.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends SessionPairHistoryDeleteManyArgs>(args?: SelectSubset<T, SessionPairHistoryDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more SessionPairHistories.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionPairHistoryUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many SessionPairHistories
+     * const sessionPairHistory = await prisma.sessionPairHistory.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends SessionPairHistoryUpdateManyArgs>(args: SelectSubset<T, SessionPairHistoryUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more SessionPairHistories and returns the data updated in the database.
+     * @param {SessionPairHistoryUpdateManyAndReturnArgs} args - Arguments to update many SessionPairHistories.
+     * @example
+     * // Update many SessionPairHistories
+     * const sessionPairHistory = await prisma.sessionPairHistory.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more SessionPairHistories and only return the `id`
+     * const sessionPairHistoryWithIdOnly = await prisma.sessionPairHistory.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends SessionPairHistoryUpdateManyAndReturnArgs>(args: SelectSubset<T, SessionPairHistoryUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SessionPairHistoryPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one SessionPairHistory.
+     * @param {SessionPairHistoryUpsertArgs} args - Arguments to update or create a SessionPairHistory.
+     * @example
+     * // Update or create a SessionPairHistory
+     * const sessionPairHistory = await prisma.sessionPairHistory.upsert({
+     *   create: {
+     *     // ... data to create a SessionPairHistory
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the SessionPairHistory we want to update
+     *   }
+     * })
+     */
+    upsert<T extends SessionPairHistoryUpsertArgs>(args: SelectSubset<T, SessionPairHistoryUpsertArgs<ExtArgs>>): Prisma__SessionPairHistoryClient<$Result.GetResult<Prisma.$SessionPairHistoryPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of SessionPairHistories.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionPairHistoryCountArgs} args - Arguments to filter SessionPairHistories to count.
+     * @example
+     * // Count the number of SessionPairHistories
+     * const count = await prisma.sessionPairHistory.count({
+     *   where: {
+     *     // ... the filter for the SessionPairHistories we want to count
+     *   }
+     * })
+    **/
+    count<T extends SessionPairHistoryCountArgs>(
+      args?: Subset<T, SessionPairHistoryCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], SessionPairHistoryCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a SessionPairHistory.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionPairHistoryAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends SessionPairHistoryAggregateArgs>(args: Subset<T, SessionPairHistoryAggregateArgs>): Prisma.PrismaPromise<GetSessionPairHistoryAggregateType<T>>
+
+    /**
+     * Group by SessionPairHistory.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionPairHistoryGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends SessionPairHistoryGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: SessionPairHistoryGroupByArgs['orderBy'] }
+        : { orderBy?: SessionPairHistoryGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, SessionPairHistoryGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSessionPairHistoryGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the SessionPairHistory model
+   */
+  readonly fields: SessionPairHistoryFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for SessionPairHistory.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__SessionPairHistoryClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the SessionPairHistory model
+   */
+  interface SessionPairHistoryFieldRefs {
+    readonly id: FieldRef<"SessionPairHistory", 'String'>
+    readonly sessionId: FieldRef<"SessionPairHistory", 'String'>
+    readonly playerA: FieldRef<"SessionPairHistory", 'String'>
+    readonly playerB: FieldRef<"SessionPairHistory", 'String'>
+    readonly createdAt: FieldRef<"SessionPairHistory", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * SessionPairHistory findUnique
+   */
+  export type SessionPairHistoryFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionPairHistory
+     */
+    select?: SessionPairHistorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionPairHistory
+     */
+    omit?: SessionPairHistoryOmit<ExtArgs> | null
+    /**
+     * Filter, which SessionPairHistory to fetch.
+     */
+    where: SessionPairHistoryWhereUniqueInput
+  }
+
+  /**
+   * SessionPairHistory findUniqueOrThrow
+   */
+  export type SessionPairHistoryFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionPairHistory
+     */
+    select?: SessionPairHistorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionPairHistory
+     */
+    omit?: SessionPairHistoryOmit<ExtArgs> | null
+    /**
+     * Filter, which SessionPairHistory to fetch.
+     */
+    where: SessionPairHistoryWhereUniqueInput
+  }
+
+  /**
+   * SessionPairHistory findFirst
+   */
+  export type SessionPairHistoryFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionPairHistory
+     */
+    select?: SessionPairHistorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionPairHistory
+     */
+    omit?: SessionPairHistoryOmit<ExtArgs> | null
+    /**
+     * Filter, which SessionPairHistory to fetch.
+     */
+    where?: SessionPairHistoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SessionPairHistories to fetch.
+     */
+    orderBy?: SessionPairHistoryOrderByWithRelationInput | SessionPairHistoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SessionPairHistories.
+     */
+    cursor?: SessionPairHistoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SessionPairHistories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SessionPairHistories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SessionPairHistories.
+     */
+    distinct?: SessionPairHistoryScalarFieldEnum | SessionPairHistoryScalarFieldEnum[]
+  }
+
+  /**
+   * SessionPairHistory findFirstOrThrow
+   */
+  export type SessionPairHistoryFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionPairHistory
+     */
+    select?: SessionPairHistorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionPairHistory
+     */
+    omit?: SessionPairHistoryOmit<ExtArgs> | null
+    /**
+     * Filter, which SessionPairHistory to fetch.
+     */
+    where?: SessionPairHistoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SessionPairHistories to fetch.
+     */
+    orderBy?: SessionPairHistoryOrderByWithRelationInput | SessionPairHistoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for SessionPairHistories.
+     */
+    cursor?: SessionPairHistoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SessionPairHistories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SessionPairHistories.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of SessionPairHistories.
+     */
+    distinct?: SessionPairHistoryScalarFieldEnum | SessionPairHistoryScalarFieldEnum[]
+  }
+
+  /**
+   * SessionPairHistory findMany
+   */
+  export type SessionPairHistoryFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionPairHistory
+     */
+    select?: SessionPairHistorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionPairHistory
+     */
+    omit?: SessionPairHistoryOmit<ExtArgs> | null
+    /**
+     * Filter, which SessionPairHistories to fetch.
+     */
+    where?: SessionPairHistoryWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of SessionPairHistories to fetch.
+     */
+    orderBy?: SessionPairHistoryOrderByWithRelationInput | SessionPairHistoryOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing SessionPairHistories.
+     */
+    cursor?: SessionPairHistoryWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` SessionPairHistories from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` SessionPairHistories.
+     */
+    skip?: number
+    distinct?: SessionPairHistoryScalarFieldEnum | SessionPairHistoryScalarFieldEnum[]
+  }
+
+  /**
+   * SessionPairHistory create
+   */
+  export type SessionPairHistoryCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionPairHistory
+     */
+    select?: SessionPairHistorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionPairHistory
+     */
+    omit?: SessionPairHistoryOmit<ExtArgs> | null
+    /**
+     * The data needed to create a SessionPairHistory.
+     */
+    data: XOR<SessionPairHistoryCreateInput, SessionPairHistoryUncheckedCreateInput>
+  }
+
+  /**
+   * SessionPairHistory createMany
+   */
+  export type SessionPairHistoryCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many SessionPairHistories.
+     */
+    data: SessionPairHistoryCreateManyInput | SessionPairHistoryCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * SessionPairHistory createManyAndReturn
+   */
+  export type SessionPairHistoryCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionPairHistory
+     */
+    select?: SessionPairHistorySelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionPairHistory
+     */
+    omit?: SessionPairHistoryOmit<ExtArgs> | null
+    /**
+     * The data used to create many SessionPairHistories.
+     */
+    data: SessionPairHistoryCreateManyInput | SessionPairHistoryCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * SessionPairHistory update
+   */
+  export type SessionPairHistoryUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionPairHistory
+     */
+    select?: SessionPairHistorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionPairHistory
+     */
+    omit?: SessionPairHistoryOmit<ExtArgs> | null
+    /**
+     * The data needed to update a SessionPairHistory.
+     */
+    data: XOR<SessionPairHistoryUpdateInput, SessionPairHistoryUncheckedUpdateInput>
+    /**
+     * Choose, which SessionPairHistory to update.
+     */
+    where: SessionPairHistoryWhereUniqueInput
+  }
+
+  /**
+   * SessionPairHistory updateMany
+   */
+  export type SessionPairHistoryUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update SessionPairHistories.
+     */
+    data: XOR<SessionPairHistoryUpdateManyMutationInput, SessionPairHistoryUncheckedUpdateManyInput>
+    /**
+     * Filter which SessionPairHistories to update
+     */
+    where?: SessionPairHistoryWhereInput
+    /**
+     * Limit how many SessionPairHistories to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * SessionPairHistory updateManyAndReturn
+   */
+  export type SessionPairHistoryUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionPairHistory
+     */
+    select?: SessionPairHistorySelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionPairHistory
+     */
+    omit?: SessionPairHistoryOmit<ExtArgs> | null
+    /**
+     * The data used to update SessionPairHistories.
+     */
+    data: XOR<SessionPairHistoryUpdateManyMutationInput, SessionPairHistoryUncheckedUpdateManyInput>
+    /**
+     * Filter which SessionPairHistories to update
+     */
+    where?: SessionPairHistoryWhereInput
+    /**
+     * Limit how many SessionPairHistories to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * SessionPairHistory upsert
+   */
+  export type SessionPairHistoryUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionPairHistory
+     */
+    select?: SessionPairHistorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionPairHistory
+     */
+    omit?: SessionPairHistoryOmit<ExtArgs> | null
+    /**
+     * The filter to search for the SessionPairHistory to update in case it exists.
+     */
+    where: SessionPairHistoryWhereUniqueInput
+    /**
+     * In case the SessionPairHistory found by the `where` argument doesn't exist, create a new SessionPairHistory with this data.
+     */
+    create: XOR<SessionPairHistoryCreateInput, SessionPairHistoryUncheckedCreateInput>
+    /**
+     * In case the SessionPairHistory was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<SessionPairHistoryUpdateInput, SessionPairHistoryUncheckedUpdateInput>
+  }
+
+  /**
+   * SessionPairHistory delete
+   */
+  export type SessionPairHistoryDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionPairHistory
+     */
+    select?: SessionPairHistorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionPairHistory
+     */
+    omit?: SessionPairHistoryOmit<ExtArgs> | null
+    /**
+     * Filter which SessionPairHistory to delete.
+     */
+    where: SessionPairHistoryWhereUniqueInput
+  }
+
+  /**
+   * SessionPairHistory deleteMany
+   */
+  export type SessionPairHistoryDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which SessionPairHistories to delete
+     */
+    where?: SessionPairHistoryWhereInput
+    /**
+     * Limit how many SessionPairHistories to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * SessionPairHistory without action
+   */
+  export type SessionPairHistoryDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SessionPairHistory
+     */
+    select?: SessionPairHistorySelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the SessionPairHistory
+     */
+    omit?: SessionPairHistoryOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Model Tournament
    */
 
@@ -21172,6 +22261,17 @@ export namespace Prisma {
   export type PairStatScalarFieldEnum = (typeof PairStatScalarFieldEnum)[keyof typeof PairStatScalarFieldEnum]
 
 
+  export const SessionPairHistoryScalarFieldEnum: {
+    id: 'id',
+    sessionId: 'sessionId',
+    playerA: 'playerA',
+    playerB: 'playerB',
+    createdAt: 'createdAt'
+  };
+
+  export type SessionPairHistoryScalarFieldEnum = (typeof SessionPairHistoryScalarFieldEnum)[keyof typeof SessionPairHistoryScalarFieldEnum]
+
+
   export const TournamentScalarFieldEnum: {
     id: 'id',
     name: 'name',
@@ -22055,6 +23155,59 @@ export namespace Prisma {
     playerB?: StringWithAggregatesFilter<"PairStat"> | string
     plays?: IntWithAggregatesFilter<"PairStat"> | number
     wins?: IntWithAggregatesFilter<"PairStat"> | number
+  }
+
+  export type SessionPairHistoryWhereInput = {
+    AND?: SessionPairHistoryWhereInput | SessionPairHistoryWhereInput[]
+    OR?: SessionPairHistoryWhereInput[]
+    NOT?: SessionPairHistoryWhereInput | SessionPairHistoryWhereInput[]
+    id?: StringFilter<"SessionPairHistory"> | string
+    sessionId?: StringFilter<"SessionPairHistory"> | string
+    playerA?: StringFilter<"SessionPairHistory"> | string
+    playerB?: StringFilter<"SessionPairHistory"> | string
+    createdAt?: DateTimeFilter<"SessionPairHistory"> | Date | string
+  }
+
+  export type SessionPairHistoryOrderByWithRelationInput = {
+    id?: SortOrder
+    sessionId?: SortOrder
+    playerA?: SortOrder
+    playerB?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type SessionPairHistoryWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    sessionId_playerA_playerB?: SessionPairHistorySessionIdPlayerAPlayerBCompoundUniqueInput
+    AND?: SessionPairHistoryWhereInput | SessionPairHistoryWhereInput[]
+    OR?: SessionPairHistoryWhereInput[]
+    NOT?: SessionPairHistoryWhereInput | SessionPairHistoryWhereInput[]
+    sessionId?: StringFilter<"SessionPairHistory"> | string
+    playerA?: StringFilter<"SessionPairHistory"> | string
+    playerB?: StringFilter<"SessionPairHistory"> | string
+    createdAt?: DateTimeFilter<"SessionPairHistory"> | Date | string
+  }, "id" | "sessionId_playerA_playerB">
+
+  export type SessionPairHistoryOrderByWithAggregationInput = {
+    id?: SortOrder
+    sessionId?: SortOrder
+    playerA?: SortOrder
+    playerB?: SortOrder
+    createdAt?: SortOrder
+    _count?: SessionPairHistoryCountOrderByAggregateInput
+    _max?: SessionPairHistoryMaxOrderByAggregateInput
+    _min?: SessionPairHistoryMinOrderByAggregateInput
+  }
+
+  export type SessionPairHistoryScalarWhereWithAggregatesInput = {
+    AND?: SessionPairHistoryScalarWhereWithAggregatesInput | SessionPairHistoryScalarWhereWithAggregatesInput[]
+    OR?: SessionPairHistoryScalarWhereWithAggregatesInput[]
+    NOT?: SessionPairHistoryScalarWhereWithAggregatesInput | SessionPairHistoryScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"SessionPairHistory"> | string
+    sessionId?: StringWithAggregatesFilter<"SessionPairHistory"> | string
+    playerA?: StringWithAggregatesFilter<"SessionPairHistory"> | string
+    playerB?: StringWithAggregatesFilter<"SessionPairHistory"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"SessionPairHistory"> | Date | string
   }
 
   export type TournamentWhereInput = {
@@ -23270,6 +24423,62 @@ export namespace Prisma {
     playerB?: StringFieldUpdateOperationsInput | string
     plays?: IntFieldUpdateOperationsInput | number
     wins?: IntFieldUpdateOperationsInput | number
+  }
+
+  export type SessionPairHistoryCreateInput = {
+    id?: string
+    sessionId: string
+    playerA: string
+    playerB: string
+    createdAt?: Date | string
+  }
+
+  export type SessionPairHistoryUncheckedCreateInput = {
+    id?: string
+    sessionId: string
+    playerA: string
+    playerB: string
+    createdAt?: Date | string
+  }
+
+  export type SessionPairHistoryUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    playerA?: StringFieldUpdateOperationsInput | string
+    playerB?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SessionPairHistoryUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    playerA?: StringFieldUpdateOperationsInput | string
+    playerB?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SessionPairHistoryCreateManyInput = {
+    id?: string
+    sessionId: string
+    playerA: string
+    playerB: string
+    createdAt?: Date | string
+  }
+
+  export type SessionPairHistoryUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    playerA?: StringFieldUpdateOperationsInput | string
+    playerB?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type SessionPairHistoryUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sessionId?: StringFieldUpdateOperationsInput | string
+    playerA?: StringFieldUpdateOperationsInput | string
+    playerB?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TournamentCreateInput = {
@@ -24507,6 +25716,36 @@ export namespace Prisma {
   export type PairStatSumOrderByAggregateInput = {
     plays?: SortOrder
     wins?: SortOrder
+  }
+
+  export type SessionPairHistorySessionIdPlayerAPlayerBCompoundUniqueInput = {
+    sessionId: string
+    playerA: string
+    playerB: string
+  }
+
+  export type SessionPairHistoryCountOrderByAggregateInput = {
+    id?: SortOrder
+    sessionId?: SortOrder
+    playerA?: SortOrder
+    playerB?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type SessionPairHistoryMaxOrderByAggregateInput = {
+    id?: SortOrder
+    sessionId?: SortOrder
+    playerA?: SortOrder
+    playerB?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type SessionPairHistoryMinOrderByAggregateInput = {
+    id?: SortOrder
+    sessionId?: SortOrder
+    playerA?: SortOrder
+    playerB?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type StageListRelationFilter = {

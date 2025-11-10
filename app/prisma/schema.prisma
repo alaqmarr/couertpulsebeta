@@ -244,6 +244,15 @@ model PairStat {
  * TOURNAMENTS
  * ============================================================
  */
+model SessionPairHistory {
+  id        String   @id @default(cuid())
+  sessionId String
+  playerA   String
+  playerB   String
+  createdAt DateTime @default(now())
+
+  @@unique([sessionId, playerA, playerB])
+}
 
 model Tournament {
   id                String   @id @default(cuid())

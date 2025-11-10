@@ -206,6 +206,14 @@ exports.Prisma.PairStatScalarFieldEnum = {
   wins: 'wins'
 };
 
+exports.Prisma.SessionPairHistoryScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  playerA: 'playerA',
+  playerB: 'playerB',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.TournamentScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -345,6 +353,7 @@ exports.Prisma.ModelName = {
   SessionParticipant: 'SessionParticipant',
   Game: 'Game',
   PairStat: 'PairStat',
+  SessionPairHistory: 'SessionPairHistory',
   Tournament: 'Tournament',
   TournamentTeam: 'TournamentTeam',
   TournamentGame: 'TournamentGame',
