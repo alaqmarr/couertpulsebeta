@@ -10,14 +10,11 @@ import MainFooter from "@/components/layout/MainFooter";
 import { DockDemo } from "@/components/Dock";
 import { getOrCreateUser } from "@/lib/clerk";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+import { Poppins } from "next/font/google";
+const poppins = Poppins({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-poppins",
 });
 
 export const metadata: Metadata = {
@@ -34,13 +31,12 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased 
-                   bg-gradient-to-br from-background via-muted/50 to-background text-foreground`}
+        className={`${poppins.className} antialiased text-foreground`}
       >
         <ClerkProvider>
           {/* Wrapper for sticky footer layout */}
           <div className="flex flex-col min-h-screen">
-            
+
             {/* --- Main Header --- */}
             <MainHeader />
 
@@ -48,13 +44,13 @@ export default async function RootLayout({
             <main className="flex-grow">
               {children}
             </main>
-{/* App-wide UI (like the dock) */}
-          {user && (
-            <DockDemo />
-          )}
+            {/* App-wide UI (like the dock) */}
+            {user && (
+              <DockDemo />
+            )}
             {/* --- Main Footer --- */}
             <MainFooter />
-            
+
           </div>
 
           {/* Styled Toaster for glass effect */}
