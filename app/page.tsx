@@ -44,9 +44,9 @@ import {
   History,
   User, // Added for "Recent Session"
 } from "lucide-react"
+import { DataFreshnessAlert } from "@/components/dashboard/DataFreshnessAlert"
 
-export const dynamic = "force-dynamic"
-export const revalidate = 0
+export const revalidate = 86400 // Revalidate every 24 hours (60 * 60 * 24)
 
 /* -------------------------------------------------------------------------- */
 /* Data Fetching                                                              */
@@ -513,6 +513,7 @@ export default async function DashboardPage() {
           <div className="lg:col-span-1 space-y-8 lg:order-2">
             <UpcomingSessionCard sessionInfo={sessionInfo} />
             <PlayerIntelCard fact={playerFact} />
+            <DataFreshnessAlert />
           </div>
 
           {/* --- MAIN CONTENT (Shows second on mobile) --- */}
