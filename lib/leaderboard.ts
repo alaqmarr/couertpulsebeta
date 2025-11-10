@@ -5,61 +5,79 @@ import { prisma } from "@/lib/db";
  * Computes session-level leaderboard: per-player games, wins, losses, win rate.
  * Returns an array sorted by win rate descending.
  */
+// lib/leaderboard.ts
 export async function getSessionLeaderboard(sessionId: string) {
   const session = await prisma.session.findUnique({
     where: { id: sessionId },
     include: {
+      games: true,
       team: {
         include: {
-          members: {
-            include: { user: true },
-          },
+          members: { include: { user: true } },
         },
       },
-      games: true,
     },
   });
 
-  if (!session) return [];
+  if (!session) throw new Error("Session not found.");
 
-  const playerStats = new Map<
+  // aggregate stats
+  const tally = new Map<
     string,
-    { plays: number; wins: number; name: string }
+    { plays: number; wins: number; losses: number; pointsDiff: number }
   >();
 
-  for (const game of session.games) {
-    const all = [...game.teamAPlayers, ...game.teamBPlayers];
-    for (const email of all) {
-      const stat = playerStats.get(email) ?? { plays: 0, wins: 0, name: email };
+  for (const g of session.games) {
+    if (!g.teamAScore || !g.teamBScore) continue; // skip unscored games
+    const diff = g.teamAScore - g.teamBScore;
+
+    // update all participating players
+    for (const email of g.teamAPlayers) {
+      const stat = tally.get(email) || { plays: 0, wins: 0, losses: 0, pointsDiff: 0 };
       stat.plays++;
-      if (
-        (game.winner === "A" && game.teamAPlayers.includes(email)) ||
-        (game.winner === "B" && game.teamBPlayers.includes(email))
-      )
-        stat.wins++;
-      playerStats.set(email, stat);
+      if (g.winner === "A") stat.wins++;
+      else if (g.winner === "B") stat.losses++;
+      stat.pointsDiff += diff; // positive if team A wins by margin
+      tally.set(email, stat);
+    }
+    for (const email of g.teamBPlayers) {
+      const stat = tally.get(email) || { plays: 0, wins: 0, losses: 0, pointsDiff: 0 };
+      stat.plays++;
+      if (g.winner === "B") stat.wins++;
+      else if (g.winner === "A") stat.losses++;
+      stat.pointsDiff -= diff; // opposite sign for team B
+      tally.set(email, stat);
     }
   }
 
-  const leaderboard = Array.from(playerStats.entries()).map(([email, s]) => {
-    const member = session.team.members.find((m) => m.email === email);
-    const name =
-      member?.displayName || member?.user?.name || email.split("@")[0];
-    const losses = s.plays - s.wins;
-    const winRate = s.plays > 0 ? (s.wins / s.plays) * 100 : 0;
+  const members = session.team.members;
+  const result = Array.from(tally.entries()).map(([email, s]) => {
+    const member = members.find((m) => m.email === email);
+    const name = member?.displayName || member?.user?.name || email.split("@")[0];
+    const winRate = s.plays ? (s.wins / s.plays) * 100 : 0;
     return {
       id: member?.id ?? email,
       name,
       plays: s.plays,
       wins: s.wins,
-      losses,
+      losses: s.losses,
       winRate,
+      pointsDiff: s.pointsDiff,
     };
   });
 
-  leaderboard.sort((a, b) => b.winRate - a.winRate);
-  return leaderboard;
+  // sort by win rate, then points diff, then wins
+  result.sort(
+    (a, b) =>
+      b.winRate - a.winRate ||
+      b.pointsDiff - a.pointsDiff ||
+      b.wins - a.wins ||
+      a.name.localeCompare(b.name)
+  );
+
+  return result;
 }
+
 
 export async function getTeamLeaderboard(teamId: string) {
   const team = await prisma.team.findUnique({

@@ -19,10 +19,12 @@ export default async function SessionLeaderboard({ sessionId }: { sessionId: str
                         <thead>
                             <tr>
                                 <th className="text-left">Player</th>
-                                <th className="text-right">Games</th>
-                                <th className="text-right">Wins</th>
-                                <th className="text-right">Losses</th>
-                                <th className="text-right">Win Rate</th>
+                                <th className="text-right">M</th>
+                                <th className="text-right">W</th>
+                                <th className="text-right">L</th>
+                                <th className="text-right">Win %</th>
+                                <th className="text-right">+/-</th>
+
                             </tr>
                         </thead>
                         <tbody>
@@ -35,6 +37,8 @@ export default async function SessionLeaderboard({ sessionId }: { sessionId: str
                                     <td className="text-right">
                                         <CircularProgress value={p.winRate} size={36} strokeWidth={5} />
                                     </td>
+                                    <td className="text-right">{p.pointsDiff}</td>
+
                                 </tr>
                             ))}
                         </tbody>
