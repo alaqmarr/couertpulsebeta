@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/update-build-time?secret=courtpulse",
+      "schedule": "0 0 * * *"
+    }
+  ]
+}
