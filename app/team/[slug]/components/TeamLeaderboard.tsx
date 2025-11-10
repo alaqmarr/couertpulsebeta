@@ -44,13 +44,21 @@ export default function TeamLeaderboard({ teamId }: { teamId: string }) {
             try {
                 const res = await fetch(`/api/team/${teamId}/leaderboard`);
                 if (!res.ok) throw new Error("Failed to fetch");
-                const data = await res.json();
-                setStats(data);
+                const data: PlayerStats[] = await res.json();
+
+                // Sort: first by win rate (descending), then by name (ascending)
+                const sortedData = data.sort((a, b) => {
+                    if (b.winRate !== a.winRate) return b.winRate - a.winRate;
+                    return a.name.localeCompare(b.name);
+                });
+
+                setStats(sortedData);
             } catch {
                 toast.error("Failed to load leaderboard.");
             }
         });
     }, [teamId]);
+
 
     if (isPending && stats.length === 0) {
         return (
