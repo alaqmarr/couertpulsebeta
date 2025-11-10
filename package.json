@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "postinstall": "npx prisma db push && npx prisma generate",
-    "postbuild": "npx ts-node scripts/built-time.ts",
+    "postbuild": "npx ts-node scripts/built-time.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.34.5",
