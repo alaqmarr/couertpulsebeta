@@ -78,17 +78,60 @@ export async function randomizeTeamsAction(
   if (session.team.ownerId !== user.id)
     throw new Error("Only the team owner can randomize.");
 
+  const teamId = session.team.id;
   const players = session.participants.map((p) => p.member.email);
   const required = matchType === "SINGLES" ? 2 : 4;
   if (players.length < required)
     throw new Error(`Need ${required} players, have ${players.length}.`);
 
-  const shuffled = [...players].sort(() => Math.random() - 0.5);
+  // Fetch pair frequency for the team
+  const pairStats = await prisma.pairStat.findMany({ where: { teamId } });
 
-  const teamAPlayers =
-    matchType === "SINGLES" ? [shuffled[0]] : shuffled.slice(0, 2);
-  const teamBPlayers =
-    matchType === "SINGLES" ? [shuffled[1]] : shuffled.slice(2, 4);
+  // Helper to count previous pairings
+  const getPairCount = (a: string, b: string) => {
+    const [p1, p2] = [a, b].sort();
+    const stat = pairStats.find((ps) => ps.playerA === p1 && ps.playerB === p2);
+    return stat ? stat.plays : 0;
+  };
+
+  let teamAPlayers: string[];
+  let teamBPlayers: string[];
+
+  if (matchType === "SINGLES") {
+    // Basic randomization for singles
+    const shuffled = [...players].sort(() => Math.random() - 0.5);
+    [teamAPlayers, teamBPlayers] = [[shuffled[0]], [shuffled[1]]];
+  } else {
+    // Doubles: minimize repeated pairs
+    const combinations: [string, string][] = [];
+    for (let i = 0; i < players.length; i++) {
+      for (let j = i + 1; j < players.length; j++) {
+        combinations.push([players[i], players[j]]);
+      }
+    }
+
+    // Score pairs (lower play count → higher freshness score)
+    const scored = combinations.map((pair) => ({
+      pair,
+      score: 1 / (1 + getPairCount(pair[0], pair[1])),
+    }));
+
+    // Sort descending by score, randomize slight variation
+    scored.sort((a, b) => b.score - a.score + (Math.random() - 0.5) * 0.1);
+
+    // Pick top 2 pairs ensuring no overlap
+    const chosen: string[][] = [];
+    for (const { pair } of scored) {
+      if (chosen.flat().some((p) => pair.includes(p))) continue;
+      chosen.push(pair);
+      if (chosen.length === 2) break;
+    }
+
+    if (chosen.length < 2)
+      throw new Error("Not enough unique pairs to form teams.");
+
+    [teamAPlayers, teamBPlayers] = [chosen[0], chosen[1]];
+  }
 
   await prisma.game.create({
     data: {
@@ -157,15 +200,9 @@ export async function setGameWinnerAction(
   }
 
   if (updated.teamAPlayers.length === 2)
-    await updatePairStats(
-      updated.teamAPlayers,
-      updated.winner === "A"
-    );
+    await updatePairStats(updated.teamAPlayers, updated.winner === "A");
   if (updated.teamBPlayers.length === 2)
-    await updatePairStats(
-      updated.teamBPlayers,
-      updated.winner === "B"
-    );
+    await updatePairStats(updated.teamBPlayers, updated.winner === "B");
 
   revalidatePath(`/team/${teamSlug}/session/${sessionSlug}`);
 }
@@ -260,8 +297,6 @@ export async function getSessionLeaderboard(sessionId: string) {
     })
     .sort(
       (a, b) =>
-        b.winRate - a.winRate ||
-        b.wins - a.wins ||
-        a.name.localeCompare(b.name)
+        b.winRate - a.winRate || b.wins - a.wins || a.name.localeCompare(b.name)
     );
 }
