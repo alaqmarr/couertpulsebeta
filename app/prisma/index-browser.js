@@ -121,6 +121,14 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
+exports.Prisma.AppConfigScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  value: 'value',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.ClerkUserScalarFieldEnum = {
   id: 'id',
   clerkId: 'clerkId',
@@ -354,6 +362,7 @@ exports.ActivityType = exports.$Enums.ActivityType = {
 };
 
 exports.Prisma.ModelName = {
+  AppConfig: 'AppConfig',
   ClerkUser: 'ClerkUser',
   User: 'User',
   Team: 'Team',

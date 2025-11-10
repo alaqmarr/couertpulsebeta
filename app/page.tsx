@@ -61,6 +61,9 @@ export const revalidate = 86400 // 60 * 60 * 24
 type DashboardData = PromiseReturnType<typeof getDashboardData>
 
 async function getDashboardData(userId: string) {
+    const appConfig = await prisma.appConfig.findUnique({
+    where: { key: "lastBuildTime" },
+  })
   const dbUser = await prisma.user.findUnique({
     where: { id: userId },
     include: {
@@ -108,13 +111,18 @@ async function getDashboardData(userId: string) {
       },
     },
   })
-  return dbUser
+  return {
+       dbUser, 
+    lastBuildTime: appConfig?.value 
+      ? new Date(appConfig.value).toISOString() 
+      : new Date().toISOString() // Fallback
+  }
 }
 
 /* -------------------------------------------------------------------------- */
 /* Data Processing                                                            */
 /* -------------------------------------------------------------------------- */
-function processDashboardData(dbUser: NonNullable<DashboardData>) {
+function processDashboardData(dbUser: NonNullable<DashboardData['dbUser']>) {
   // --- 1. Assemble data sets ---
   const ownedTeams = dbUser.teamsOwned ?? []
   const memberTeams = dbUser.memberships.map((m: any) => m.team)
@@ -314,8 +322,8 @@ export default async function DashboardPage() {
   const user = await getOrCreateUser()
   if (!user) redirect("/sign-in")
 
-  const dbUser = await getDashboardData(user.id)
-  if (!dbUser) redirect("/sign-up")
+  const data = await getDashboardData(user.id)
+  if (!data.dbUser) redirect("/sign-up")
 
   const {
     userDisplay,
@@ -330,7 +338,7 @@ export default async function DashboardPage() {
     isNameMismatched,
     packageType,
     playerFacts,
-  } = processDashboardData(dbUser)
+  } = processDashboardData(data.dbUser)
 
   const { totalPoints, totalWins, totalLosses, winRate, totalGames } = stats
 

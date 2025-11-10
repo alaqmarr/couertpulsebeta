@@ -49,6 +49,16 @@ enum ActivityType {
   PAYMENT_MADE
 }
 
+model AppConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+}
+
 /**
  * ============================================================
  * CLERK AUTH SCHEMA
