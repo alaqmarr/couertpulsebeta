@@ -37,7 +37,13 @@ export default async function SessionLeaderboard({ sessionId }: { sessionId: str
                                     <td className="text-right">
                                         <CircularProgress value={p.winRate} size={36} strokeWidth={5} />
                                     </td>
-                                    <td className="text-right">{p.pointsDiff}</td>
+                                    <td
+                                        className={`text-right ${p.pointsDiff > 0 ? "text-green-600" : p.pointsDiff < 0 ? "text-red-600" : ""
+                                            }`}
+                                    >
+                                        {p.pointsDiff}
+                                    </td>
+
 
                                 </tr>
                             ))}

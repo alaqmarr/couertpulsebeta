@@ -28,12 +28,23 @@ export async function getSessionLeaderboard(sessionId: string) {
   >();
 
   for (const g of session.games) {
-    if (!g.teamAScore || !g.teamBScore) continue; // skip unscored games
+    if (
+      g.teamAScore === null ||
+      g.teamBScore === null ||
+      g.teamAScore === undefined ||
+      g.teamBScore === undefined
+    )
+      continue;
     const diff = g.teamAScore - g.teamBScore;
 
     // update all participating players
     for (const email of g.teamAPlayers) {
-      const stat = tally.get(email) || { plays: 0, wins: 0, losses: 0, pointsDiff: 0 };
+      const stat = tally.get(email) || {
+        plays: 0,
+        wins: 0,
+        losses: 0,
+        pointsDiff: 0,
+      };
       stat.plays++;
       if (g.winner === "A") stat.wins++;
       else if (g.winner === "B") stat.losses++;
@@ -41,7 +52,12 @@ export async function getSessionLeaderboard(sessionId: string) {
       tally.set(email, stat);
     }
     for (const email of g.teamBPlayers) {
-      const stat = tally.get(email) || { plays: 0, wins: 0, losses: 0, pointsDiff: 0 };
+      const stat = tally.get(email) || {
+        plays: 0,
+        wins: 0,
+        losses: 0,
+        pointsDiff: 0,
+      };
       stat.plays++;
       if (g.winner === "B") stat.wins++;
       else if (g.winner === "A") stat.losses++;
@@ -53,7 +69,8 @@ export async function getSessionLeaderboard(sessionId: string) {
   const members = session.team.members;
   const result = Array.from(tally.entries()).map(([email, s]) => {
     const member = members.find((m) => m.email === email);
-    const name = member?.displayName || member?.user?.name || email.split("@")[0];
+    const name =
+      member?.displayName || member?.user?.name || email.split("@")[0];
     const winRate = s.plays ? (s.wins / s.plays) * 100 : 0;
     return {
       id: member?.id ?? email,
@@ -77,7 +94,6 @@ export async function getSessionLeaderboard(sessionId: string) {
 
   return result;
 }
-
 
 export async function getTeamLeaderboard(teamId: string) {
   const team = await prisma.team.findUnique({
