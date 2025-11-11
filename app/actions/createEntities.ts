@@ -13,7 +13,7 @@ export async function createTeamAction(name: string) {
   if (!user) throw new Error("Unauthorized");
 
   // Plan enforcement
-  const limit = user.teamQuota ?? 1;
+  const limit = user.teamQuota ?? 0;
   const currentCount = await prisma.team.count({ where: { ownerId: user.id } });
   if (currentCount >= limit)
     throw new Error(
@@ -61,7 +61,7 @@ export async function createTournamentAction(name: string) {
   if (!user) throw new Error("Unauthorized");
 
   // Plan enforcement
-  const limit = user.tournamentQuota ?? 1;
+  const limit = user.tournamentQuota ?? 0;
   const currentCount = await prisma.tournament.count({
     where: { ownerId: user.id },
   });

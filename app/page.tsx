@@ -61,7 +61,7 @@ export const revalidate = 86400 // 60 * 60 * 24
 type DashboardData = PromiseReturnType<typeof getDashboardData>
 
 async function getDashboardData(userId: string) {
-    const appConfig = await prisma.appConfig.findUnique({
+  const appConfig = await prisma.appConfig.findUnique({
     where: { key: "lastBuildTime" },
   })
   const dbUser = await prisma.user.findUnique({
@@ -112,9 +112,9 @@ async function getDashboardData(userId: string) {
     },
   })
   return {
-       dbUser, 
-    lastBuildTime: appConfig?.value 
-      ? new Date(appConfig.value).toISOString() 
+    dbUser,
+    lastBuildTime: appConfig?.value
+      ? new Date(appConfig.value).toISOString()
       : new Date().toISOString() // Fallback
   }
 }
@@ -342,6 +342,8 @@ export default async function DashboardPage() {
 
   const { totalPoints, totalWins, totalLosses, winRate, totalGames } = stats
 
+  const lastBuildTime = data.lastBuildTime
+
   return (
     <main className="min-h-screen p-4 md:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -370,7 +372,7 @@ export default async function DashboardPage() {
             <UpcomingSessionCard sessionInfo={sessionInfo} />
             <PlayerIntelCard facts={playerFacts} />
             <DataFreshnessAlert
-              buildTime={buildTime}
+              buildTime={lastBuildTime}
               packageType={packageType}
             />
           </div>
