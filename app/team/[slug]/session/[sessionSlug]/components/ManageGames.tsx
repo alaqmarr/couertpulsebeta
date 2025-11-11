@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -15,6 +15,7 @@ import {
     ListChecks,
     Trophy,
     Info,
+    ArrowRightCircleIcon,
 } from "lucide-react";
 import {
     createGameAction,
@@ -24,7 +25,6 @@ import {
     togglePlayerAvailabilityAction,
 } from "../session-actions.server";
 
-// ... (Interface props remain the same) ...
 interface ManageGamesProps {
     session: {
         id: string;
@@ -60,47 +60,56 @@ export default function ManageGames({
     isOwner,
 }: ManageGamesProps) {
     const [loadingGames, setLoadingGames] = useState<Record<string, boolean>>({});
-
     const [scores, setScores] = useState<Record<string, { a: number; b: number }>>({});
-
     const [isPending, startTransition] = useTransition();
     const [isRandomizing, setRandomizing] = useState(false);
+    const members = session.team.members;
 
     const initiallySelected = session.participants
         .filter((p) => p.isSelected)
         .map((p) => p.memberId);
 
     const [selectedIds, setSelectedIds] = useState<string[]>(initiallySelected);
-    const members = session.team.members;
-
     const [teamA, setTeamA] = useState<string[]>([]);
     const [teamB, setTeamB] = useState<string[]>([]);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [justCreated, setJustCreated] = useState(false);
 
+    const games = [...session.games].reverse();
+    const prevGameCount = useRef(games.length);
+
+    // === Derived Data ===
     const playerCount = selectedIds.length;
     const totalTeamPlayers = teamA.length + teamB.length;
-
     const matchType =
         totalTeamPlayers === 2 && teamA.length === 1 && teamB.length === 1
             ? "SINGLES"
             : "DOUBLES";
 
-    /* =========================================================
-       UTILITIES (No changes needed)
-     ========================================================= */
+    const current = games[currentIndex];
+
+    // === Effects ===
+    useEffect(() => {
+        // detect new game creation
+        if (games.length > prevGameCount.current) {
+            setCurrentIndex(0);
+            setJustCreated(true);
+            setTimeout(() => setJustCreated(false), 1500);
+        }
+        prevGameCount.current = games.length;
+    }, [games.length]);
+
+    // === Utils ===
     const getPlayerName = (email: string) => {
         const m = members.find((x) => x.email === email);
         return (
-            m?.displayName ||
-            m?.user?.name ||
-            email.split("@")[0] ||
-            "Unnamed Player"
+            m?.displayName || m?.user?.name || email.split("@")[0] || "Unnamed Player"
         );
     };
+
     const getMemberById = (id: string) => members.find((m) => m.id === id);
 
-    /* =========================================================
-       ACTIONS (No changes needed)
-     ========================================================= */
+    // === Actions ===
     const handleToggleAvailability = (memberId: string) => {
         const member = getMemberById(memberId);
         if (!member) return;
@@ -108,10 +117,12 @@ export default function ManageGames({
             ? selectedIds.filter((id) => id !== memberId)
             : [...selectedIds, memberId];
         setSelectedIds(newSelected);
+
         if (selectedIds.includes(memberId)) {
             setTeamA((prev) => prev.filter((e) => e !== member.email));
             setTeamB((prev) => prev.filter((e) => e !== member.email));
         }
+
         startTransition(async () => {
             try {
                 await togglePlayerAvailabilityAction(sessionSlug, memberId);
@@ -126,6 +137,7 @@ export default function ManageGames({
         const member = getMemberById(memberId);
         if (!member) return;
         const email = member.email;
+
         if (team === "A") {
             setTeamB((b) => b.filter((e) => e !== email));
             setTeamA((a) =>
@@ -146,9 +158,7 @@ export default function ManageGames({
         }
         const expectedSize = matchType === "SINGLES" ? 1 : 2;
         if (teamA.length !== expectedSize || teamB.length !== expectedSize) {
-            toast.error(
-                `${matchType} matches require ${expectedSize} player(s) per team.`
-            );
+            toast.error(`${matchType} matches require ${expectedSize} player(s) per team.`);
             return;
         }
         startTransition(async () => {
@@ -166,9 +176,7 @@ export default function ManageGames({
     const handleRandomizeTeams = async () => {
         const required = matchType === "SINGLES" ? 2 : 4;
         if (playerCount < required) {
-            toast.error(
-                `At least ${required} available players required for ${matchType}.`
-            );
+            toast.error(`At least ${required} available players required for ${matchType}.`);
             return;
         }
         setRandomizing(true);
@@ -182,20 +190,13 @@ export default function ManageGames({
         }
     };
 
-    const handleSetWinner = (slug: string, winner: "A" | "B") => {
-        startTransition(async () => {
-            try {
-                await setGameWinnerAction(teamSlug, sessionSlug, slug, winner);
-                toast.success("Winner updated");
-            } catch (err: any) {
-                toast.error(err.message || "Error updating winner");
-            }
-        });
-    };
+    // === Carousel Navigation ===
+    const goPrev = () =>
+        setCurrentIndex((p) => (p === games.length - 1 ? 0 : p + 1));
+    const goNext = () =>
+        setCurrentIndex((p) => (p === 0 ? games.length - 1 : p - 1));
 
-    /* =========================================================
-       RENDER
-     ========================================================= */
+    // === Render ===
     return (
         <Card className="bg-card/70 backdrop-blur-sm border border-primary/10">
             <CardHeader>
@@ -206,7 +207,7 @@ export default function ManageGames({
             </CardHeader>
 
             <CardContent className="space-y-6">
-                {/* ================= SECTION 1: PLAYER AVAILABILITY ================= */}
+                {/* Section 1: Player Availability */}
                 {isOwner && (
                     <section>
                         <div className="flex justify-between items-center mb-2">
@@ -219,7 +220,7 @@ export default function ManageGames({
                             </span>
                         </div>
                         <p className="text-sm text-muted-foreground mb-3">
-                            Select the members who are present for this session.
+                            Select members available for today’s session.
                         </p>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                             {members.map((m) => {
@@ -240,7 +241,7 @@ export default function ManageGames({
                     </section>
                 )}
 
-                {/* ================= SECTION 2: TEAM ASSIGNMENT ================= */}
+                {/* Section 2: Team Assignment */}
                 {isOwner && selectedIds.length > 0 && (
                     <section>
                         <Separator className="bg-border/50" />
@@ -250,16 +251,13 @@ export default function ManageGames({
                                 Manual Team Builder
                             </h3>
                             <p className="text-sm text-muted-foreground mb-3">
-                                Manually assign available players to a team.
+                                Assign selected players to Team A or Team B.
                             </p>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {["A", "B"].map((team) => {
                                     const currentTeam = team === "A" ? teamA : teamB;
                                     return (
-                                        <div
-                                            key={team}
-                                            className="rounded-lg border bg-background/50"
-                                        >
+                                        <div key={team} className="rounded-lg border bg-background/50">
                                             <div className="p-2 border-b bg-muted/50 rounded-t-lg">
                                                 <p className="font-medium text-sm">
                                                     Team {team} ({currentTeam.length} player
@@ -297,7 +295,7 @@ export default function ManageGames({
                     </section>
                 )}
 
-                {/* ================= SECTION 3: GAME CONTROLS ================= */}
+                {/* Section 3: Game Controls */}
                 {isOwner && (
                     <section>
                         <Separator className="bg-border/50" />
@@ -333,125 +331,189 @@ export default function ManageGames({
                     </section>
                 )}
 
+                {/* Section 4: Game List */}
                 {/* ================= SECTION 4: GAME LIST ================= */}
                 <section>
                     <Separator className="bg-border/50" />
                     <div className="pt-6">
                         <h3 className="font-semibold flex items-center gap-2 mb-3">
                             <ListChecks size={16} className="text-primary" />
-                            Game List ({session.games.length})
+                            Game History ({games.length})
                         </h3>
-                        {session.games.length === 0 ? (
+
+                        {games.length === 0 ? (
                             <div className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed border-primary/20 rounded-lg bg-muted/50">
                                 <Info size={24} className="text-primary" />
                                 <p className="text-muted-foreground text-sm">
-                                    No games yet. Create or randomize to start playing.
+                                    No matches yet — create or randomize to start.
                                 </p>
                             </div>
                         ) : (
-                            <div className="space-y-3">
-                                {session.games.map((g, i) => (
-                                    <div
-                                        key={g.id}
-                                        className="flex flex-col sm:flex-row justify-between items-start sm:items-center border border-primary/10 bg-muted/50 rounded-lg p-3"
-                                    >
-                                        <div className="mb-2 sm:mb-0">
-                                            <p className="text-sm font-semibold">
-                                                Match {i + 1}:{" "}
-                                                {g.teamAPlayers.map(getPlayerName).join(" & ")} vs{" "}
-                                                {g.teamBPlayers.map(getPlayerName).join(" & ")}
-                                            </p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {g.winner ? (
-                                                    <>
-                                                        Winner:{" "}
-                                                        <span className="font-semibold text-primary">
-                                                            Team {g.winner}
-                                                        </span>
-                                                        {typeof g.teamAScore === "number" &&
-                                                            typeof g.teamBScore === "number" &&
-                                                            g.winner !== "DRAW" && (
-                                                                <> won by {Math.abs(g.teamAScore - g.teamBScore)} points</>
-                                                            )}
-                                                        {g.winner === "DRAW" && " (Draw)"}
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <span className="flex row items-center gap-1">
-                                                            <Loader2 className="w-2 h-2 animate-spin" />Awaiting result…
-                                                        </span>
-                                                    </>
-                                                )}
-                                            </p>
+                            <div className="relative flex flex-col items-center">
+                                {/* === CARD === */}
+                                <Card
+                                    className={`w-full max-w-xl bg-background/80 backdrop-blur border border-primary/10 rounded-xl shadow-md p-4 transition-all duration-700 ${justCreated ? "scale-[1.03] ring-2 ring-primary/40 shadow-lg" : ""
+                                        }`}
+                                >
+                                    {/* === HEADER === */}
+                                    <div className="flex justify-between items-center border-b border-border/40 pb-2 mb-3">
+                                        <h4 className="text-sm font-semibold">
+                                            Match {games.length - currentIndex}
+                                        </h4>
+                                        {current.winner ? (
+                                            <span className="flex items-center gap-1 text-green-600 text-xs font-medium">
+                                                <UserCheck className="w-3 h-3" /> Completed
+                                            </span>
+                                        ) : (
+                                            <span className="flex items-center gap-1 text-amber-500 text-xs font-medium">
+                                                <Loader2 className="w-3 h-3 animate-spin" />
+                                                Awaiting confirmation
+                                            </span>
+                                        )}
+                                    </div>
 
+                                    {/* === TEAMS VS SECTION === */}
+                                    <div className="grid grid-cols-3 items-center gap-3 text-sm text-center">
+                                        <div
+                                            className={`flex flex-col gap-1 ${current.winner === "A"
+                                                ? "font-bold text-green-700"
+                                                : current.winner === "B"
+                                                    ? "text-red-600"
+                                                    : ""
+                                                }`}
+                                        >
+                                            {current.teamAPlayers.map((p) => (
+                                                <span key={p} className="uppercase">
+                                                    {getPlayerName(p)}
+                                                </span>
+                                            ))}
                                         </div>
 
-                                        {isOwner && !g.winner && (
-                                            <div className="flex flex-col sm:flex-row gap-2 items-center">
-                                                <div className="flex items-center gap-2">
+                                        <div className="flex justify-center">
+                                            <img
+                                                src="/vs.png"
+                                                alt="vs"
+                                                className={`w-[120px] h-auto opacity-85 transition-transform duration-700 ${justCreated ? "scale-110" : ""
+                                                    }`}
+                                            />
+                                        </div>
+
+                                        <div
+                                            className={`flex flex-col gap-1 ${current.winner === "B"
+                                                ? "font-bold text-green-700"
+                                                : current.winner === "A"
+                                                    ? "text-red-600 line-through"
+                                                    : ""
+                                                }`}
+                                        >
+                                            {current.teamBPlayers.map((p) => (
+                                                <span key={p} className="uppercase">
+                                                    {getPlayerName(p)}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* === FOOTER / RESULTS + POINTS === */}
+                                    <div className="border-t border-border/40 mt-4 pt-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+                                        {/* Result Text */}
+                                        <div className="flex flex-col text-xs sm:text-sm text-muted-foreground">
+                                            {current.winner ? (
+                                                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                                                    <span>
+                                                        <span className="font-medium text-foreground">Result:</span>{" "}
+                                                        <span className="text-green-700 font-semibold">
+                                                            Team {current.winner} Victorious
+                                                        </span>
+                                                    </span>
+                                                    <span className="text-[11px] sm:text-xs text-muted-foreground">
+                                                        Final Score —{" "}
+                                                        <span className="font-semibold text-foreground">
+                                                            {current.teamAScore} : {current.teamBScore}
+                                                        </span>
+                                                    </span>
+                                                </div>
+                                            ) : (
+                                                <span className="italic text-amber-600">
+                                                    Awaiting official score confirmation…
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {/* Inputs + Confirm Button */}
+                                        {isOwner && !current.winner && (
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex items-center gap-1">
                                                     <input
-                                                        defaultValue={0}
+                                                        min={0}
+                                                        max={21}
                                                         placeholder="A"
                                                         inputMode="numeric"
-                                                        className="w-16 border rounded p-1 text-center"
-                                                        value={scores[g.slug]?.a ?? ""}
+                                                        className="w-14 sm:w-16 border border-border rounded-md p-1 text-center text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                                                        value={scores[current.slug]?.a ?? ""}
                                                         onChange={(e) =>
                                                             setScores((prev) => ({
                                                                 ...prev,
-                                                                [g.slug]: {
-                                                                    ...(prev[g.slug] || { a: 0, b: 0 }),
+                                                                [current.slug]: {
+                                                                    ...(prev[current.slug] || { a: 0, b: 0 }),
                                                                     a: parseInt(e.target.value) || 0,
                                                                 },
                                                             }))
                                                         }
                                                     />
-                                                    <span>:</span>
+                                                    <span className="text-xs font-semibold">:</span>
                                                     <input
-                                                        defaultValue={0}
+                                                        min={0}
+                                                        max={21}
                                                         placeholder="B"
                                                         inputMode="numeric"
-                                                        className="w-16 border rounded p-1 text-center"
-                                                        value={scores[g.slug]?.b ?? ""}
+                                                        className="w-14 sm:w-16 border border-border rounded-md p-1 text-center text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                                                        value={scores[current.slug]?.b ?? ""}
                                                         onChange={(e) =>
                                                             setScores((prev) => ({
                                                                 ...prev,
-                                                                [g.slug]: {
-                                                                    ...(prev[g.slug] || { a: 0, b: 0 }),
+                                                                [current.slug]: {
+                                                                    ...(prev[current.slug] || { a: 0, b: 0 }),
                                                                     b: parseInt(e.target.value) || 0,
                                                                 },
                                                             }))
                                                         }
                                                     />
                                                 </div>
+
                                                 <Button
                                                     size="sm"
+                                                    className="w-full sm:w-auto"
                                                     onClick={async () => {
-                                                        setLoadingGames((prev) => ({ ...prev, [g.slug]: true }));
+                                                        setLoadingGames((prev) => ({ ...prev, [current.slug]: true }));
                                                         startTransition(async () => {
                                                             try {
                                                                 await submitGameScoreAction(
                                                                     teamSlug,
                                                                     sessionSlug,
-                                                                    g.slug,
-                                                                    scores[g.slug]?.a ?? 0,
-                                                                    scores[g.slug]?.b ?? 0
+                                                                    current.slug,
+                                                                    scores[current.slug]?.a ?? 0,
+                                                                    scores[current.slug]?.b ?? 0
                                                                 );
-                                                                toast.success("Scores submitted");
+                                                                toast.success("Scores submitted successfully");
                                                             } catch (err: any) {
                                                                 toast.error(err.message || "Error submitting score");
                                                             } finally {
-                                                                setLoadingGames((prev) => ({ ...prev, [g.slug]: false }));
+                                                                setLoadingGames((prev) => ({
+                                                                    ...prev,
+                                                                    [current.slug]: false,
+                                                                }));
                                                             }
                                                         });
                                                     }}
                                                     disabled={
                                                         isPending ||
-                                                        loadingGames[g.slug] ||
-                                                        scores[g.slug]?.a === undefined ||
-                                                        scores[g.slug]?.b === undefined
+                                                        loadingGames[current.slug] ||
+                                                        scores[current.slug]?.a === undefined ||
+                                                        scores[current.slug]?.b === undefined
                                                     }
                                                 >
-                                                    {loadingGames[g.slug] ? (
+                                                    {loadingGames[current.slug] ? (
                                                         <Loader2 className="w-4 h-4 animate-spin" />
                                                     ) : (
                                                         <>
@@ -460,13 +522,23 @@ export default function ManageGames({
                                                         </>
                                                     )}
                                                 </Button>
-
                                             </div>
                                         )}
-
-
                                     </div>
-                                ))}
+                                </Card>
+
+                                {/* === CAROUSEL CONTROLS === */}
+                                <div className="flex items-center justify-center gap-4 mt-3">
+                                    <Button variant="outline" size="icon" onClick={() => setCurrentIndex((p) => (p === 0 ? games.length - 1 : p - 1))}>
+                                        <ArrowRightCircleIcon className="w-4 h-4 rotate-180" />
+                                    </Button>
+                                    <p className="text-xs text-muted-foreground">
+                                        {currentIndex + 1} / {games.length}
+                                    </p>
+                                    <Button variant="outline" size="icon" onClick={() => setCurrentIndex((p) => (p === games.length - 1 ? 0 : p + 1))}>
+                                        <ArrowRightCircleIcon className="w-4 h-4" />
+                                    </Button>
+                                </div>
                             </div>
                         )}
                     </div>
