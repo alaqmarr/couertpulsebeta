@@ -34,6 +34,7 @@ const PUBLIC_PATTERNS = [
   /^\/team\/[^/]+\/stats$/, // /team/[slug]/stats
   /^\/tournament\/[^/]+$/, // /tournament/[slug]
   /^\/tournament\/[^/]+\/results$/, // optional future variant
+  /^\/spectate\/[^/]+$/, // /spectate/[teamSlug]
 ];
 
 export default clerkMiddleware(async (auth: any, req: NextRequest) => {

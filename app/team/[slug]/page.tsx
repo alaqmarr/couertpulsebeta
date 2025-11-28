@@ -14,6 +14,7 @@ import SessionList from "./components/SessionList";
 import TeamLeaderboard from "./components/TeamLeaderboard";
 import PlayerStatsCard from "./components/PlayerStatsCard";
 import { getTeamLeaderboard } from "@/lib/leaderboard";
+import ShareSpectatorLink from "@/components/ShareSpectatorLink";
 
 // Icons
 import {
@@ -57,7 +58,6 @@ export default async function TeamPage({
     const isOwner = team.ownerId === user.id;
 
     // ✅ Compute leaderboard stats for all players
-    // ✅ Compute and sort leaderboard stats for all players
     let leaderboard = await getTeamLeaderboard(team.id);
 
     // ✅ Sort: by winRate descending, then by name ascending
@@ -68,7 +68,7 @@ export default async function TeamPage({
 
 
     return (
-        <main className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-background text-foreground p-4 md:p-6 lg:p-8">
+        <main className="min-h-screen text-foreground p-4 md:p-8">
             <div className="max-w-7xl mx-auto space-y-8">
                 {/* ---------------- HEADER ---------------- */}
                 <section className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -81,10 +81,13 @@ export default async function TeamPage({
                             Created on {new Date(team.createdAt).toLocaleDateString("en-IN")}
                         </p>
                     </div>
-                    {isOwner && <AddMemberDrawer slug={slug} />}
+                    <div className="flex items-center gap-2">
+                        <ShareSpectatorLink slug={slug} />
+                        {isOwner && <AddMemberDrawer slug={slug} />}
+                    </div>
                 </section>
 
-                <Separator className="bg-border/50" />
+                <Separator className="bg-white/10" />
 
                 {/* ---------------- TWO COLUMN LAYOUT ---------------- */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
@@ -92,54 +95,42 @@ export default async function TeamPage({
                     {/* ---------------- MAIN CONTENT (Left) ---------------- */}
                     <div className="lg:col-span-2 space-y-8">
                         {/* ---------------- TEAM MEMBERS ---------------- */}
-                        {/* 💡 TODO: Apply glass styles to your <MemberList> component. 
-              See instructions below. 
-            */}
                         <Suspense fallback={<LoadingCard title="Loading Members..." />}>
                             <MemberList members={team.members} slug={slug} isOwner={isOwner} />
                         </Suspense>
 
                         {/* ---------------- SESSIONS ---------------- */}
-                        {/* 💡 TODO: Apply glass styles to your <SessionList> component. 
-              See instructions below. 
-            */}
                         <Suspense fallback={<LoadingCard title="Loading Sessions..." />}>
                             <SessionList team={team} />
                         </Suspense>
 
                         {/* ---------------- PLAYER PERFORMANCE GRID ---------------- */}
                         <section>
-                            <Card className="bg-card/70 backdrop-blur-sm border border-primary/10">
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <BarChartHorizontal size={18} />
+                            <div className="glass-card rounded-xl border-primary/10">
+                                <div className="p-6 space-y-6">
+                                    <div className="flex items-center gap-2 font-semibold text-lg">
+                                        <BarChartHorizontal size={18} className="text-primary" />
                                         Individual Player Performance
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    {leaderboard.length === 0 ? (
-                                        <EmptyState text="No games yet to calculate player stats." />
-                                    ) : (
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                                            {/* 💡 TODO: Apply glass/lift styles to your <PlayerStatsCard> component. 
-                        See instructions below. 
-                      */}
-                                            {leaderboard.map((player: any) => (
-                                                <PlayerStatsCard key={player.id} player={player} />
-                                            ))}
-                                        </div>
-                                    )}
-                                </CardContent>
-                            </Card>
+                                    </div>
+                                    <div>
+                                        {leaderboard.length === 0 ? (
+                                            <EmptyState text="No games yet to calculate player stats." />
+                                        ) : (
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                                {leaderboard.map((player: any) => (
+                                                    <PlayerStatsCard key={player.id} player={player} />
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
                         </section>
                     </div>
 
                     {/* ---------------- SIDEBAR (Right) ---------------- */}
                     <aside className="lg:col-span-1 lg:sticky lg:top-24 space-y-8">
                         {/* ---------------- TEAM LEADERBOARD ---------------- */}
-                        {/* 💡 TODO: Apply glass styles to your <TeamLeaderboard> component. 
-              See instructions below. 
-            */}
                         <Suspense fallback={<LoadingCard title="Computing Team Stats..." />}>
                             <TeamLeaderboard teamId={team.id} />
                         </Suspense>
@@ -147,22 +138,22 @@ export default async function TeamPage({
 
                         {/* ---------------- SUMMARY ---------------- */}
                         <section>
-                            <Card className="bg-card/70 backdrop-blur-sm border border-primary/10">
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <Info size={18} />
+                            <div className="glass-card rounded-xl border-primary/10">
+                                <div className="p-6 space-y-4">
+                                    <div className="flex items-center gap-2 font-semibold text-lg">
+                                        <Info size={18} className="text-primary" />
                                         Team Summary
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-2">
-                                    <SummaryItem
-                                        label="Games Played"
-                                        value={team.sessions.reduce((a, s) => a + s.games.length, 0)}
-                                    />
-                                    <SummaryItem label="Total Sessions" value={team.sessions.length} />
-                                    <SummaryItem label="Total Members" value={team.members.length} />
-                                </CardContent>
-                            </Card>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <SummaryItem
+                                            label="Games Played"
+                                            value={team.sessions.reduce((a, s) => a + s.games.length, 0)}
+                                        />
+                                        <SummaryItem label="Total Sessions" value={team.sessions.length} />
+                                        <SummaryItem label="Total Members" value={team.members.length} />
+                                    </div>
+                                </div>
+                            </div>
                         </section>
                     </aside>
                 </div>
@@ -183,7 +174,7 @@ function EmptyState({ text }: { text: string }) {
 
 function SummaryItem({ label, value }: { label: string; value: string | number }) {
     return (
-        <div className="flex justify-between items-center text-sm p-2 bg-muted/50 rounded border">
+        <div className="flex justify-between items-center text-sm p-2 bg-black/20 rounded border border-white/5">
             <span className="text-muted-foreground">{label}</span>
             <span className="font-medium text-foreground">{value}</span>
         </div>

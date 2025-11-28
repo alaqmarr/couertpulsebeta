@@ -1,23 +1,21 @@
-// Imports (Data, UI, and Icons)
 import { prisma } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/clerk";
 import { redirect, notFound } from "next/navigation";
-import Link from "next/link"; // ✅ Import Link
-import { Suspense } from "react";
+import { adminDb } from "@/lib/firebase-admin";
+import { CalendarDays, ChevronLeft, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
+import { Suspense } from "react";
 import { LoadingCard } from "@/components/LoadingCard";
-
-// Custom Components
 import ManageGames from "./components/ManageGames";
-import SessionLeaderboard from "@/components/SessionLeaderboard";
-import { getSessionLeaderboard } from "@/lib/leaderboard";
+import SessionLeaderboard from "./components/SessionLeaderboard";
+import { SyncStatus } from "@/components/SyncStatus";
+import { Badge } from "@/components/ui/badge";
+import { hasCapability } from "@/lib/permissions";
 
-// Icons
-import { CalendarDays, ChevronLeft, Gamepad2, Trophy } from "lucide-react";
-
-export const dynamic = "force-dynamic";
 export const revalidate = 0;
+export const dynamic = "force-dynamic";
 
 export default async function SessionPage({
   params,
@@ -28,7 +26,6 @@ export default async function SessionPage({
   const user = await getOrCreateUser();
   if (!user) redirect("/sign-in");
 
-  // ... (data fetching logic remains the same) ...
   const session = await prisma.session.findUnique({
     where: { slug: sessionSlug },
     include: {
@@ -44,7 +41,11 @@ export default async function SessionPage({
       },
       participants: {
         include: {
-          member: true,
+          member: {
+            include: {
+              user: true,
+            },
+          },
         },
       },
       games: true,
@@ -53,86 +54,88 @@ export default async function SessionPage({
 
   if (!session) notFound();
 
+  console.log(`[SessionPage] Loaded session ${session.id} with ${session.games.length} games.`);
+
   const team = session.team;
   const isOwner = team.ownerId === user.id;
+  const canSync = hasCapability(user, "canSync");
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-background text-foreground p-4 md:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="max-w-7xl mx-auto space-y-8 h-full">
         {/* ---------------- HEADER ---------------- */}
-        <section className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-              <CalendarDays size={28} className="text-primary" />
-              {session.name || "Session"}
+            <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+              <Calendar size={28} className="text-primary" />
+              {session.name || "Untitled Session"}
             </h1>
-            <p className="text-sm text-muted-foreground mt-1 ml-10">
-              {team.name} • {new Date(session.date).toLocaleDateString("en-IN")}
+            <p className="text-sm text-muted-foreground mt-1">
+              {new Date(session.date).toLocaleDateString("en-IN", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
             </p>
           </div>
+          <div className="flex items-center gap-2">
+            <SyncStatus />
+            <Badge variant="outline" className="glass-badge-info bg-background/50 backdrop-blur-sm">
+              {session.games.length} Games Played
+            </Badge>
+          </div>
+        </header>
 
-          <Button asChild variant="outline">
-            <Link href={`/team/${slug}`}>
-              <ChevronLeft className="w-4 h-4 mr-1.5" />
-              Back to Team
-            </Link>
-          </Button>
-        </section>
-
-        <Separator className="bg-border/50" />
+        <Separator className="bg-white/10" />
 
         {/* ---------------- TWO COLUMN LAYOUT ---------------- */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-
           {/* ---------------- MAIN CONTENT (Left) ---------------- */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-8 flex flex-col justify-center min-h-[60vh]">
             {/* ---------------- GAME MANAGEMENT ---------------- */}
-            {/* 💡 TODO: Apply glass styles to your <ManageGames> component. 
-                See instructions below. 
-            */}
-            <Suspense fallback={<LoadingCard title="Loading Games..." />}>
-              <ManageGames
-                session={{
-                  id: session.id,
-                  slug: session.slug,
-                  games: session.games.map((g) => ({
-                    id: g.id,
-                    slug: g.slug,
-                    teamAPlayers: g.teamAPlayers,
-                    teamBPlayers: g.teamBPlayers,
-                    teamAScore: g.teamAScore || 0,
-                    teamBScore: g.teamBScore || 0,
-                    winner: g.winner,
-                  })),
-                  team: {
-                    members: session.team.members.map((m) => ({
-                      id: m.id,
-                      email: m.email,
-                      displayName: m.displayName,
-                      user: { name: m.user?.name ?? null },
+            <section className="w-full">
+              <Suspense fallback={<LoadingCard title="Loading Games..." />}>
+                <ManageGames
+                  session={{
+                    id: session.id,
+                    slug: session.slug,
+                    games: session.games.map((g) => ({
+                      id: g.id,
+                      slug: g.slug,
+                      sessionId: g.sessionId,
+                      teamAPlayers: g.teamAPlayers,
+                      teamBPlayers: g.teamBPlayers,
+                      teamAScore: g.teamAScore || 0,
+                      teamBScore: g.teamBScore || 0,
+                      winner: g.winner,
                     })),
-                  },
-                  participants: session.participants.map((p) => ({
-                    memberId: p.memberId,
-                    isSelected: p.isSelected,
-                  })),
-                }}
-                teamSlug={slug}
-                sessionSlug={sessionSlug}
-                isOwner={isOwner}
-              />
-            </Suspense>
+                    team: {
+                      members: session.team.members.map((m) => ({
+                        id: m.id,
+                        email: m.email,
+                        displayName: m.displayName,
+                        user: { name: m.user?.name ?? null },
+                      })),
+                    },
+                    participants: session.participants.map((p) => ({
+                      memberId: p.memberId,
+                      isSelected: p.isSelected,
+                    })),
+                  }}
+                  teamSlug={slug}
+                  sessionSlug={sessionSlug}
+                  isOwner={isOwner}
+                  canSync={canSync}
+                />
+              </Suspense>
+            </section>
           </div>
 
           {/* ---------------- SIDEBAR (Right) ---------------- */}
           <aside className="lg:col-span-1 lg:sticky lg:top-24 space-y-8">
-            {/* ---------------- SESSION LEADERBOARD ---------------- */}
-            {/* 💡 TODO: Apply glass styles to your <SessionLeaderboard> component. 
-                See instructions below. 
-            */}
-            <Suspense
-              fallback={<LoadingCard title="Calculating Leaderboard..." />}
-            >
+            {/* ---------------- LEADERBOARD ---------------- */}
+            <Suspense fallback={<LoadingCard title="Loading Leaderboard..." />}>
               <SessionLeaderboard sessionId={session.id} />
             </Suspense>
           </aside>

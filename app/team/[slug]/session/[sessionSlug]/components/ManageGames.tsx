@@ -1,28 +1,35 @@
 "use client";
 
 import { useState, useTransition, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { rtdb } from "@/lib/firebase";
+import { ref, onValue } from "firebase/database";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { toast } from "react-hot-toast";
 import {
     Loader2,
     Shuffle,
     PlusCircle,
     Users,
-    Gamepad2,
     UserCheck,
     ListChecks,
-    Trophy,
     Info,
     ArrowRightCircleIcon,
+    RefreshCw, // New icon
 } from "lucide-react";
 import {
     createGameAction,
     randomizeTeamsAction,
     submitGameScoreAction,
     togglePlayerAvailabilityAction,
+    syncSessionAction, // New action
 } from "../session-actions.server";
+
+import LiveGameCard from "@/components/LiveGameCard";
+import { useSessionParticipants } from "@/hooks/useSessionParticipants";
+import { useSessionGames } from "@/hooks/useSessionGames";
+import { SyncStatus } from "@/components/SyncStatus";
+import { useSessionSync } from "@/hooks/useSessionSync";
 
 interface ManageGamesProps {
     session: {
@@ -31,6 +38,7 @@ interface ManageGamesProps {
         games: {
             id: string;
             slug: string;
+            sessionId: string;
             teamAPlayers: string[];
             teamBPlayers: string[];
             teamAScore: number | 0;
@@ -50,6 +58,7 @@ interface ManageGamesProps {
     teamSlug: string;
     sessionSlug: string;
     isOwner: boolean;
+    canSync: boolean;
 }
 
 export default function ManageGames({
@@ -57,33 +66,56 @@ export default function ManageGames({
     teamSlug,
     sessionSlug,
     isOwner,
+    canSync,
 }: ManageGamesProps) {
-    const [loadingGames, setLoadingGames] = useState<Record<string, boolean>>({});
-    const [scores, setScores] = useState<Record<string, { a: number; b: number }>>({});
+    const router = useRouter();
+    const { data: syncData } = useSessionSync(session.id);
+
+    // router.refresh() removed to prevent aggressive server re-fetching.
+    // Real-time updates are handled by useSessionGames and useSessionParticipants.
     const [isPending, startTransition] = useTransition();
     const [isRandomizing, setRandomizing] = useState(false);
     const [teamA, setTeamA] = useState<string[]>([]);
     const [teamB, setTeamB] = useState<string[]>([]);
+    const [matchType, setMatchType] = useState<"SINGLES" | "DOUBLES">("DOUBLES");
     const [currentIndex, setCurrentIndex] = useState(0);
     const [justCreated, setJustCreated] = useState(false);
 
     const members = session.team.members;
-    const initiallySelected = session.participants
-        .filter((p) => p.isSelected)
-        .map((p) => p.memberId);
-    const [selectedIds, setSelectedIds] = useState<string[]>(initiallySelected);
 
-    const games = [...session.games].reverse();
+    // --- REAL-TIME HOOK ---
+    const { participants, toggleAvailability } = useSessionParticipants(
+        session.id,
+        session.participants.map(p => ({
+            id: p.memberId, // Using memberId as ID for simplicity in Firebase map
+            memberId: p.memberId,
+            displayName: members.find(m => m.id === p.memberId)?.displayName || "Player",
+            isSelected: p.isSelected
+        }))
+    );
+
+    // Derived selected IDs from real-time data
+    const selectedIds = participants.filter(p => p.isSelected).map(p => p.memberId);
+    // ----------------------
+
+    // --- REAL-TIME GAMES ---
+    const { games: liveGames } = useSessionGames(
+        session.id,
+        session.games.map(g => ({
+            ...g,
+            teamAScore: g.teamAScore ?? 0,
+            teamBScore: g.teamBScore ?? 0,
+            winner: g.winner ?? null
+        }))
+    );
+
+    // Use liveGames instead of session.games, and reverse for display order
+    const games = [...liveGames].reverse();
     const prevGameCount = useRef(games.length);
 
     // Derived data
     const playerCount = selectedIds.length;
     const totalTeamPlayers = teamA.length + teamB.length;
-    const matchType =
-        totalTeamPlayers === 2 && teamA.length === 1 && teamB.length === 1
-            ? "SINGLES"
-            : "DOUBLES";
-    const current = games[currentIndex];
 
     // Detect new game creation
     useEffect(() => {
@@ -94,6 +126,22 @@ export default function ManageGames({
         }
         prevGameCount.current = games.length;
     }, [games.length]);
+
+    // --- REAL-TIME TEAMS SYNC ---
+    useEffect(() => {
+        if (!session.id) return;
+        const teamsRef = ref(rtdb, `sessions/${session.id}/generatedTeams`);
+        const unsubscribe = onValue(teamsRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data && data.timestamp) {
+                if (data.teamA) setTeamA(data.teamA);
+                if (data.teamB) setTeamB(data.teamB);
+                if (data.matchType) setMatchType(data.matchType);
+            }
+        });
+        return () => unsubscribe();
+    }, [session.id]);
+    // ----------------------------
 
     // Utils
     const getPlayerName = (email: string) => {
@@ -107,21 +155,26 @@ export default function ManageGames({
     const handleToggleAvailability = (memberId: string) => {
         const member = getMemberById(memberId);
         if (!member) return;
-        const newSelected = selectedIds.includes(memberId)
-            ? selectedIds.filter((id) => id !== memberId)
-            : [...selectedIds, memberId];
-        setSelectedIds(newSelected);
 
-        if (selectedIds.includes(memberId)) {
+        const isCurrentlySelected = selectedIds.includes(memberId);
+
+        // 1. Instant Firebase Update
+        toggleAvailability(memberId, isCurrentlySelected, {
+            displayName: getPlayerName(member.email)
+        });
+
+        // 2. Clear from teams if removing
+        if (isCurrentlySelected) {
             setTeamA((prev) => prev.filter((e) => e !== member.email));
             setTeamB((prev) => prev.filter((e) => e !== member.email));
         }
 
+        // 3. Background Sync to Postgres
         startTransition(async () => {
             try {
                 await togglePlayerAvailabilityAction(sessionSlug, memberId);
             } catch {
-                toast.error("Failed to update availability");
+                toast.error("Failed to sync availability to DB");
             }
         });
     };
@@ -144,7 +197,9 @@ export default function ManageGames({
         }
     };
 
-    const handleCreateGame = () => {
+    const [isCreating, setIsCreating] = useState(false);
+
+    const handleCreateGame = async () => {
         if (teamA.length < 1 || teamB.length < 1) {
             toast.error("Please select players for both teams.");
             return;
@@ -154,16 +209,19 @@ export default function ManageGames({
             toast.error(`${matchType} matches require ${expectedSize} player(s) per team.`);
             return;
         }
-        startTransition(async () => {
-            try {
-                await createGameAction(teamSlug, sessionSlug, matchType, teamA, teamB);
-                toast.success(`Game created (${matchType.toLowerCase()})`);
-                setTeamA([]);
-                setTeamB([]);
-            } catch (err: any) {
-                toast.error(err.message || "Error creating game");
-            }
-        });
+
+        setIsCreating(true);
+        try {
+            // No startTransition here - we want instant UI feedback via Firebase hook
+            await createGameAction(teamSlug, sessionSlug, matchType, teamA, teamB);
+            toast.success(`Game created (${matchType.toLowerCase()})`);
+            setTeamA([]);
+            setTeamB([]);
+        } catch (err: any) {
+            toast.error(err.message || "Error creating game");
+        } finally {
+            setIsCreating(false);
+        }
     };
 
     const handleRandomizeTeams = async () => {
@@ -183,352 +241,234 @@ export default function ManageGames({
         }
     };
 
+    const handleManualSync = () => {
+        if (!canSync) {
+            toast.error("Upgrade to Pro to use Manual Sync");
+            return;
+        }
+        startTransition(async () => {
+            try {
+                await syncSessionAction(session.id);
+                toast.success("Data synced with database");
+            } catch {
+                toast.error("Sync failed");
+            }
+        });
+    };
+
+    const handleConfirmScore = async (slug: string, scoreA: number, scoreB: number) => {
+        await submitGameScoreAction(teamSlug, sessionSlug, slug, scoreA, scoreB);
+    };
+
     const goPrev = () =>
         setCurrentIndex((p) => (p === 0 ? games.length - 1 : p - 1));
     const goNext = () =>
         setCurrentIndex((p) => (p === games.length - 1 ? 0 : p + 1));
 
+    const current = games[currentIndex];
+
     // Render
     return (
-        <div className="flex flex-col gap-8">
-            {/* === Session Availability === */}
-            {isOwner && (
-                <Card className="border border-primary/10 bg-card/70 backdrop-blur-sm">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Users size={18} className="text-primary" />
-                            Session Availability
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-sm text-muted-foreground mb-3">
-                            Select members available for today’s session.
-                        </p>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                            {members.map((m) => {
-                                const isSelected = selectedIds.includes(m.id);
-                                return (
-                                    <Button
-                                        key={m.id}
-                                        variant={isSelected ? "default" : "outline"}
-                                        onClick={() => handleToggleAvailability(m.id)}
-                                        disabled={isPending}
-                                        className="justify-start truncate"
-                                    >
-                                        {getPlayerName(m.email)}
-                                    </Button>
-                                );
-                            })}
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
-
-            {/* === Manual Team Builder === */}
-            {isOwner && selectedIds.length > 0 && (
-                <Card className="border border-primary/10 bg-card/70 backdrop-blur-sm">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <UserCheck size={18} className="text-primary" />
-                            Manual Team Builder
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-sm text-muted-foreground mb-3">
-                            Assign selected players to Team A or Team B.
-                        </p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {["A", "B"].map((team) => {
-                                const currentTeam = team === "A" ? teamA : teamB;
-                                return (
-                                    <div key={team} className="rounded-lg border bg-background/50">
-                                        <div className="p-2 border-b bg-muted/50 rounded-t-lg">
-                                            <p className="font-medium text-sm">
-                                                Team {team} ({currentTeam.length} player
-                                                {currentTeam.length !== 1 ? "s" : ""})
-                                            </p>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-2 p-2">
-                                            {members
-                                                .filter((m) => selectedIds.includes(m.id))
-                                                .map((m) => {
-                                                    const selected =
-                                                        team === "A"
-                                                            ? teamA.includes(m.email)
-                                                            : teamB.includes(m.email);
-                                                    return (
-                                                        <Button
-                                                            key={m.id}
-                                                            variant={selected ? "default" : "outline"}
-                                                            onClick={() =>
-                                                                handleAssignPlayer(team as "A" | "B", m.id)
-                                                            }
-                                                            disabled={isPending}
-                                                            className="justify-start truncate"
-                                                        >
-                                                            {getPlayerName(m.email)}
-                                                        </Button>
-                                                    );
-                                                })}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
-
-            {/* === Game Controls === */}
-            {isOwner && (
-                <div className="flex flex-wrap gap-2">
-                    <Button
-                        onClick={handleRandomizeTeams}
-                        disabled={isRandomizing || isPending || playerCount < 2}
-                        variant="outline"
-                    >
-                        {isRandomizing ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                            <>
-                                <Shuffle className="w-4 h-4 mr-1.5" />
-                                Randomize ({matchType})
-                            </>
-                        )}
-                    </Button>
-                    <Button
-                        onClick={handleCreateGame}
-                        disabled={isPending || totalTeamPlayers < 2}
-                    >
-                        {isPending ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                            <>
-                                <PlusCircle className="w-4 h-4 mr-1.5" />
-                                Create ({matchType}) Game
-                            </>
-                        )}
-                    </Button>
-                </div>
-            )}
-
-            {/* === Game History === */}
-            <section>
-                <Separator className="bg-border/50 mb-4" />
-                <div className="mb-3 flex items-center justify-between">
-                    <h3 className="font-semibold flex items-center gap-2">
-                        <ListChecks size={16} className="text-primary" />
-                        Game History
-                    </h3>
-                    <span className="text-sm text-muted-foreground">
-                        {games.length} total matches
-                    </span>
-                </div>
-
-                {games.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed border-primary/20 rounded-lg bg-muted/50">
-                        <Info size={24} className="text-primary" />
-                        <p className="text-muted-foreground text-sm">
-                            No matches yet — create or randomize to start.
+        <div className="space-y-8">
+            {/* --- GAME MANAGEMENT PANEL --- */}
+            <div className="space-y-4 sm:space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                        <h2 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2">
+                            <Shuffle className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+                            Game Management
+                        </h2>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
+                            Create matches and track scores in real-time.
                         </p>
                     </div>
-                ) : (
-                    <div className="relative flex flex-col items-center gap-4">
-                        {/* === Single Match Card === */}
-                        <Card
-                            className={`w-full max-w-3xl bg-background/80 backdrop-blur border border-primary/10 rounded-xl shadow-md p-4 transition-all duration-700 ${justCreated ? "scale-[1.03] ring-2 ring-primary/40 shadow-lg" : ""
-                                }`}
-                        >
-                            {/* Header */}
-                            <div className="flex justify-between items-center border-b border-border/40 pb-2 mb-3">
-                                <h4 className="text-sm font-semibold">
-                                    Match {games.length - currentIndex}
-                                </h4>
-                                {current.winner ? (
-                                    <span className="flex items-center gap-1 text-green-600 text-xs font-medium">
-                                        <UserCheck className="w-3 h-3" /> Completed
-                                    </span>
-                                ) : (
-                                    <span className="flex items-center gap-1 text-amber-500 text-xs font-medium">
-                                        <Loader2 className="w-3 h-3 animate-spin" />
-                                        Awaiting confirmation
-                                    </span>
-                                )}
-                            </div>
+                    <SyncStatus />
+                </div>
 
-                            {/* Teams */}
-                            <div className="grid grid-cols-3 items-center gap-3 text-sm text-center">
-                                <div
-                                    className={`flex flex-col gap-1 ${current.winner === "A"
-                                            ? "font-bold text-green-700"
-                                            : current.winner === "B"
-                                                ? "text-red-600"
-                                                : ""
-                                        }`}
-                                >
-                                    {current.teamAPlayers.map((p) => (
-                                        <span key={p} className="uppercase">
-                                            {getPlayerName(p)}
-                                        </span>
-                                    ))}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
+                    {/* LEFT COLUMN: Availability & Teams */}
+                    <div className="space-y-4 sm:space-y-6">
+                        {/* === Session Availability === */}
+                        {isOwner && (
+                            <div className="glass-card rounded-lg p-3 sm:p-4">
+                                <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                                    <Users size={16} className="text-primary" />
+                                    <h3 className="font-semibold text-sm sm:text-base">Session Availability</h3>
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                    {members.map((m) => {
+                                        const isSelected = selectedIds.includes(m.id);
+                                        return (
+                                            <Button
+                                                key={m.id}
+                                                variant={isSelected ? "default" : "outline"}
+                                                onClick={() => handleToggleAvailability(m.id)}
+                                                className={`justify-start truncate h-8 sm:h-9 text-[10px] sm:text-xs transition-all duration-300 ${isSelected ? "shadow-md" : "glass-item hover:bg-white/5 border-white/10"}`}
+                                            >
+                                                {getPlayerName(m.email)}
+                                            </Button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* === Manual Team Builder === */}
+                        {isOwner && selectedIds.length > 0 && (
+                            <div className="glass-card rounded-lg p-3 sm:p-4">
+                                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                                    <div className="flex items-center gap-2">
+                                        <UserCheck size={16} className="text-primary" />
+                                        <h3 className="font-semibold text-sm sm:text-base">Team Builder</h3>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            variant={matchType === "DOUBLES" ? "secondary" : "ghost"}
+                                            size="sm"
+                                            onClick={() => setMatchType("DOUBLES")}
+                                            className="h-6 sm:h-7 text-[10px] sm:text-xs"
+                                        >
+                                            Doubles
+                                        </Button>
+                                        <Button
+                                            variant={matchType === "SINGLES" ? "secondary" : "ghost"}
+                                            size="sm"
+                                            onClick={() => setMatchType("SINGLES")}
+                                            className="h-6 sm:h-7 text-[10px] sm:text-xs"
+                                        >
+                                            Singles
+                                        </Button>
+                                    </div>
                                 </div>
 
-                                <div className="flex justify-center">
-                                    <img
-                                        src="/vs.png"
-                                        alt="vs"
-                                        className={`w-[120px] h-auto opacity-85 transition-transform duration-700 ${justCreated ? "scale-110" : ""
-                                            }`}
+                                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                                    {["A", "B"].map((team) => {
+                                        const currentTeam = team === "A" ? teamA : teamB;
+                                        return (
+                                            <div key={team} className="glass-item rounded-md overflow-hidden">
+                                                <div className="p-2 border-b border-white/5 bg-white/5 text-center">
+                                                    <p className="font-medium text-xs">
+                                                        Team {team}
+                                                    </p>
+                                                </div>
+                                                <div className="p-2 min-h-[80px] space-y-1">
+                                                    {currentTeam.map(email => (
+                                                        <div key={email} className="text-xs px-2 py-1 bg-white/5 rounded border border-white/10 truncate">
+                                                            {getPlayerName(email)}
+                                                        </div>
+                                                    ))}
+                                                    {currentTeam.length === 0 && (
+                                                        <p className="text-[10px] text-muted-foreground text-center py-4">
+                                                            Empty
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <div className="p-2 border-t border-white/5 bg-white/5">
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {members
+                                                            .filter((m) => selectedIds.includes(m.id) && !teamA.includes(m.email) && !teamB.includes(m.email))
+                                                            .map((m) => (
+                                                                <Button
+                                                                    key={m.id}
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    onClick={() => handleAssignPlayer(team as "A" | "B", m.id)}
+                                                                    className="h-6 text-[10px] px-2 py-0 glass-btn-primary border-primary/30 hover:bg-primary/20"
+                                                                >
+                                                                    + {getPlayerName(m.email).split(" ")[0]}
+                                                                </Button>
+                                                            ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                                <div className="flex gap-2 mt-4">
+                                    <Button
+                                        onClick={handleRandomizeTeams}
+                                        disabled={isRandomizing || isPending || playerCount < 2}
+                                        variant="outline"
+                                        className="flex-1"
+                                    >
+                                        {isRandomizing ? (
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                        ) : (
+                                            <>
+                                                <Shuffle className="w-4 h-4 mr-1.5" />
+                                                Randomize
+                                            </>
+                                        )}
+                                    </Button>
+                                    <Button
+                                        onClick={handleCreateGame}
+                                        disabled={isCreating || totalTeamPlayers < 2}
+                                        className="flex-1 glass-button"
+                                    >
+                                        {isCreating ? (
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                        ) : (
+                                            <>
+                                                <PlusCircle className="w-4 h-4 mr-1.5" />
+                                                Start Game
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* RIGHT COLUMN: Live Game & History */}
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h3 className="font-semibold flex items-center gap-2">
+                                <ListChecks size={18} className="text-primary" />
+                                Live Match
+                            </h3>
+                            <span className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-full">
+                                {games.length} matches total
+                            </span>
+                        </div>
+
+                        {games.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center gap-2 p-12 border-2 border-dashed border-primary/10 rounded-xl bg-muted/5">
+                                <Info size={32} className="text-primary/50" />
+                                <p className="text-muted-foreground text-sm">
+                                    No matches yet — create or randomize to start.
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="relative flex flex-col items-center gap-4">
+                                {/* === Single Match Card (Live) === */}
+                                <div className="w-full">
+                                    <LiveGameCard
+                                        game={current}
+                                        isOwner={isOwner}
+                                        getPlayerName={getPlayerName}
+                                        onConfirm={handleConfirmScore}
+                                        justCreated={justCreated}
                                     />
                                 </div>
 
-                                <div
-                                    className={`flex flex-col gap-1 ${current.winner === "B"
-                                            ? "font-bold text-green-700"
-                                            : current.winner === "A"
-                                                ? "text-red-600 line-through"
-                                                : ""
-                                        }`}
-                                >
-                                    {current.teamBPlayers.map((p) => (
-                                        <span key={p} className="uppercase">
-                                            {getPlayerName(p)}
-                                        </span>
-                                    ))}
+                                {/* Carousel Controls */}
+                                <div className="flex items-center justify-center gap-4 bg-card/30 backdrop-blur-sm px-4 py-2 rounded-full border border-white/5">
+                                    <Button variant="ghost" size="icon" onClick={goPrev} className="h-8 w-8 rounded-full">
+                                        <ArrowRightCircleIcon className="w-5 h-5 rotate-180 text-muted-foreground" />
+                                    </Button>
+                                    <p className="text-xs font-medium tabular-nums">
+                                        Match {games.length - currentIndex} of {games.length}
+                                    </p>
+                                    <Button variant="ghost" size="icon" onClick={goNext} className="h-8 w-8 rounded-full">
+                                        <ArrowRightCircleIcon className="w-5 h-5 text-muted-foreground" />
+                                    </Button>
                                 </div>
                             </div>
-
-                            {/* Footer */}
-                            <div className="border-t border-border/40 mt-4 pt-3 flex flex-col sm:flex-row items-center justify-between gap-3">
-                                <div className="flex flex-col text-xs sm:text-sm text-muted-foreground">
-                                    {current.winner ? (
-                                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                                            <span>
-                                                <span className="font-medium text-foreground">
-                                                    Result:
-                                                </span>{" "}
-                                                <span className="text-green-700 font-semibold">
-                                                    Team {current.winner} Victorious
-                                                </span>
-                                            </span>
-                                            <span className="text-[11px] sm:text-xs text-muted-foreground">
-                                                Final Score —{" "}
-                                                <span className="font-semibold text-foreground">
-                                                    {current.teamAScore} : {current.teamBScore}
-                                                </span>
-                                            </span>
-                                        </div>
-                                    ) : (
-                                        <span className="italic text-amber-600">
-                                            Awaiting official score confirmation…
-                                        </span>
-                                    )}
-                                </div>
-
-                                {/* Score Inputs + Confirm */}
-                                {isOwner && !current.winner && (
-                                    <div className="flex items-center gap-2">
-                                        <div className="flex items-center gap-1">
-                                            <input
-                                                min={0}
-                                                max={21}
-                                                placeholder="A"
-                                                inputMode="numeric"
-                                                className="w-14 sm:w-16 border border-border rounded-md p-1 text-center text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-                                                value={scores[current.slug]?.a ?? ""}
-                                                onChange={(e) =>
-                                                    setScores((prev) => ({
-                                                        ...prev,
-                                                        [current.slug]: {
-                                                            ...(prev[current.slug] || { a: 0, b: 0 }),
-                                                            a: parseInt(e.target.value) || 0,
-                                                        },
-                                                    }))
-                                                }
-                                            />
-                                            <span className="text-xs font-semibold">:</span>
-                                            <input
-                                                min={0}
-                                                max={21}
-                                                placeholder="B"
-                                                inputMode="numeric"
-                                                className="w-14 sm:w-16 border border-border rounded-md p-1 text-center text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-                                                value={scores[current.slug]?.b ?? ""}
-                                                onChange={(e) =>
-                                                    setScores((prev) => ({
-                                                        ...prev,
-                                                        [current.slug]: {
-                                                            ...(prev[current.slug] || { a: 0, b: 0 }),
-                                                            b: parseInt(e.target.value) || 0,
-                                                        },
-                                                    }))
-                                                }
-                                            />
-                                        </div>
-
-                                        <Button
-                                            size="sm"
-                                            onClick={async () => {
-                                                setLoadingGames((prev) => ({
-                                                    ...prev,
-                                                    [current.slug]: true,
-                                                }));
-                                                startTransition(async () => {
-                                                    try {
-                                                        await submitGameScoreAction(
-                                                            teamSlug,
-                                                            sessionSlug,
-                                                            current.slug,
-                                                            scores[current.slug]?.a ?? 0,
-                                                            scores[current.slug]?.b ?? 0
-                                                        );
-                                                        toast.success("Scores submitted successfully");
-                                                    } catch (err: any) {
-                                                        toast.error(err.message || "Error submitting score");
-                                                    } finally {
-                                                        setLoadingGames((prev) => ({
-                                                            ...prev,
-                                                            [current.slug]: false,
-                                                        }));
-                                                    }
-                                                });
-                                            }}
-                                            disabled={
-                                                isPending ||
-                                                loadingGames[current.slug] ||
-                                                scores[current.slug]?.a === undefined ||
-                                                scores[current.slug]?.b === undefined
-                                            }
-                                        >
-                                            {loadingGames[current.slug] ? (
-                                                <Loader2 className="w-4 h-4 animate-spin" />
-                                            ) : (
-                                                <>
-                                                    <Trophy className="w-4 h-4 mr-1.5" />
-                                                    Confirm
-                                                </>
-                                            )}
-                                        </Button>
-                                    </div>
-                                )}
-                            </div>
-                        </Card>
-
-                        {/* Carousel Controls */}
-                        <div className="flex items-center justify-center gap-4 mt-3">
-                            <Button variant="outline" size="icon" onClick={goPrev}>
-                                <ArrowRightCircleIcon className="w-4 h-4 rotate-180" />
-                            </Button>
-                            <p className="text-xs text-muted-foreground">
-                                {currentIndex + 1} / {games.length}
-                            </p>
-                            <Button variant="outline" size="icon" onClick={goNext}>
-                                <ArrowRightCircleIcon className="w-4 h-4" />
-                            </Button>
-                        </div>
+                        )}
                     </div>
-                )}
-            </section>
+                </div>
+            </div>
         </div>
     );
 }

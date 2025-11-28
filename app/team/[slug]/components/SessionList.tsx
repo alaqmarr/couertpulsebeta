@@ -6,10 +6,8 @@ import { toast } from "react-hot-toast";
 
 // UI Components
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import {
     Dialog,
     DialogTrigger,
@@ -67,122 +65,124 @@ export default function SessionList({
                 toast.success("Session deleted.");
                 setSessionToDelete(null); // Close the dialog
             } catch (err: any) {
-                toast.error(err.message || "Error deleting session.");
+                toast.error(err.message || "Failed to delete session.");
             }
         });
     }
 
     return (
-        <Card className="bg-card/70 backdrop-blur-sm border border-primary/10">
-            <CardHeader>
-                <div className="flex items-center justify-between flex-wrap gap-3">
-                    <CardTitle className="flex items-center gap-2">
-                        <Calendar size={18} />
+        <div className="glass-card rounded-xl border-primary/10">
+            <div className="p-3 sm:p-4">
+                <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+                    <div className="flex items-center gap-2 font-semibold text-lg">
+                        <Calendar size={18} className="text-primary" />
                         Sessions ({team.sessions.length})
-                    </CardTitle>
+                    </div>
 
                     {/* --- Create Session Dialog --- */}
                     <CreateSessionDialog team={team} />
                 </div>
-            </CardHeader>
 
-            <CardContent>
-                {team.sessions.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed border-primary/20 rounded-lg bg-muted/50">
-                        <Info size={24} className="text-primary" />
-                        <p className="text-muted-foreground text-sm">
-                            No sessions yet. Create one to start recording games.
-                        </p>
-                    </div>
-                ) : (
-                    <AlertDialog>
-                        <ul className="divide-y divide-border/50">
-                            {team.sessions.map((s) => (
-                                <li
-                                    key={s.id}
-                                    className="py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between"
-                                >
-                                    <div>
-                                        <p className="font-medium">{s.name || "Untitled Session"}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                            {new Date(s.date).toLocaleDateString("en-IN", {
-                                                weekday: "short",
-                                                day: "2-digit",
-                                                month: "short",
-                                                year: "numeric",
-                                            })}
-                                        </p>
-                                    </div>
-                                    <div className="flex items-center gap-2 mt-2 sm:mt-0">
-                                        <span className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-md border">
-                                            {s.games.length} games
-                                        </span>
-                                        <Button
-                                            variant="secondary"
-                                            size="sm"
-                                            onClick={() =>
-                                                router.push(`/team/${team.slug}/session/${s.slug}`)
-                                            }
-                                        >
-                                            Open
-                                        </Button>
-                                        <AlertDialogTrigger asChild>
+                <div>
+                    {team.sessions.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed border-primary/20 rounded-lg bg-muted/5">
+                            <Info size={24} className="text-primary" />
+                            <p className="text-muted-foreground text-sm">
+                                No sessions yet. Create one to start recording games.
+                            </p>
+                        </div>
+                    ) : (
+                        <AlertDialog>
+                            <ul className="divide-y divide-white/10">
+                                {team.sessions.map((s) => (
+                                    <li
+                                        key={s.id}
+                                        className="py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between"
+                                    >
+                                        <div>
+                                            <p className="font-medium">{s.name || "Untitled Session"}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {new Date(s.date).toLocaleDateString("en-IN", {
+                                                    weekday: "short",
+                                                    day: "2-digit",
+                                                    month: "short",
+                                                    year: "numeric",
+                                                })}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                                            <span className="text-xs text-muted-foreground bg-black/20 px-2 py-1 rounded-md border border-white/5">
+                                                {s.games.length} games
+                                            </span>
                                             <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="text-red-500 hover:text-red-400"
-                                                disabled={isPending}
-                                                onClick={() => setSessionToDelete(s)}
+                                                variant="secondary"
+                                                size="sm"
+                                                onClick={() =>
+                                                    router.push(`/team/${team.slug}/session/${s.slug}`)
+                                                }
+                                                className="glass-button"
                                             >
-                                                <Trash className="w-4 h-4" />
+                                                Open
                                             </Button>
-                                        </AlertDialogTrigger>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
+                                            <AlertDialogTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
+                                                    disabled={isPending}
+                                                    onClick={() => setSessionToDelete(s)}
+                                                >
+                                                    <Trash className="w-4 h-4" />
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
 
-                        {/* --- Delete Confirmation Dialog --- */}
-                        <AlertDialogContent className="bg-card/90 backdrop-blur-md border border-primary/20">
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    This will permanently delete the session{" "}
-                                    <span className="font-semibold text-foreground">
-                                        {sessionToDelete?.name || "Untitled Session"}
-                                    </span>{" "}
-                                    and all its {sessionToDelete?.games.length} games.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel asChild>
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => setSessionToDelete(null)}
-                                        disabled={isPending}
-                                    >
-                                        Cancel
-                                    </Button>
-                                </AlertDialogCancel>
-                                <AlertDialogAction asChild>
-                                    <Button
-                                        variant="destructive"
-                                        onClick={handleDeleteSession}
-                                        disabled={isPending}
-                                    >
-                                        {isPending ? (
-                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                        ) : (
-                                            "Delete Session"
-                                        )}
-                                    </Button>
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                )}
-            </CardContent>
-        </Card>
+                            {/* --- Delete Confirmation Dialog --- */}
+                            <AlertDialogContent className="glass-panel border-primary/20">
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This will permanently delete the session{" "}
+                                        <span className="font-semibold text-foreground">
+                                            {sessionToDelete?.name || "Untitled Session"}
+                                        </span>{" "}
+                                        and all its {sessionToDelete?.games.length} games.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel asChild>
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => setSessionToDelete(null)}
+                                            disabled={isPending}
+                                            className="glass-button"
+                                        >
+                                            Cancel
+                                        </Button>
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction asChild>
+                                        <Button
+                                            variant="destructive"
+                                            onClick={handleDeleteSession}
+                                            disabled={isPending}
+                                        >
+                                            {isPending ? (
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                            ) : (
+                                                "Delete Session"
+                                            )}
+                                        </Button>
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    )}
+                </div>
+            </div>
+        </div>
     );
 }
 
@@ -229,7 +229,7 @@ function CreateSessionDialog({
                     Create Session
                 </Button>
             </DialogTrigger>
-            <DialogContent className="bg-card/90 backdrop-blur-md border border-primary/20">
+            <DialogContent className="glass-panel border-primary/20">
                 <DialogHeader>
                     <DialogTitle>Create New Session</DialogTitle>
                     <DialogDescription>
@@ -245,12 +245,13 @@ function CreateSessionDialog({
                             value={sessionName}
                             onChange={(e) => setSessionName(e.target.value)}
                             disabled={isPending}
+                            className="bg-white/5 border-white/10"
                         />
                     </div>
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="outline" disabled={isPending}>
+                        <Button variant="outline" disabled={isPending} className="glass-button">
                             Cancel
                         </Button>
                     </DialogClose>

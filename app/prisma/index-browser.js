@@ -243,14 +243,46 @@ exports.Prisma.TournamentScalarFieldEnum = {
   createdAt: 'createdAt',
   isActive: 'isActive',
   minGamesPerPlayer: 'minGamesPerPlayer',
-  bannerUrl: 'bannerUrl'
+  bannerUrl: 'bannerUrl',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  matchDays: 'matchDays',
+  courts: 'courts',
+  auctionPurse: 'auctionPurse',
+  useCustomStats: 'useCustomStats',
+  thumbnailUrl: 'thumbnailUrl',
+  description: 'description',
+  rules: 'rules',
+  contactPhone: 'contactPhone',
+  entryFee: 'entryFee',
+  paymentUpi: 'paymentUpi',
+  paymentQrCode: 'paymentQrCode',
+  cashContactName: 'cashContactName',
+  cashContactNumber: 'cashContactNumber'
+};
+
+exports.Prisma.TournamentMemberScalarFieldEnum = {
+  id: 'id',
+  tournamentId: 'tournamentId',
+  userId: 'userId',
+  role: 'role',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.TournamentTeamScalarFieldEnum = {
   id: 'id',
   tournamentId: 'tournamentId',
-  teamId: 'teamId',
-  thumbnailUrl: 'thumbnailUrl'
+  name: 'name',
+  color: 'color',
+  logoUrl: 'logoUrl',
+  purseSpent: 'purseSpent',
+  matchesPlayed: 'matchesPlayed',
+  wins: 'wins',
+  losses: 'losses',
+  draws: 'draws',
+  points: 'points',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.TournamentGameScalarFieldEnum = {
@@ -261,7 +293,11 @@ exports.Prisma.TournamentGameScalarFieldEnum = {
   teamBId: 'teamBId',
   teamAPlayers: 'teamAPlayers',
   teamBPlayers: 'teamBPlayers',
+  teamAScore: 'teamAScore',
+  teamBScore: 'teamBScore',
   winningTeam: 'winningTeam',
+  status: 'status',
+  round: 'round',
   scheduleTime: 'scheduleTime',
   completedAt: 'completedAt',
   createdAt: 'createdAt'
@@ -316,6 +352,65 @@ exports.Prisma.CalendarEventScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.TournamentPlayerScalarFieldEnum = {
+  id: 'id',
+  tournamentId: 'tournamentId',
+  teamId: 'teamId',
+  userId: 'userId',
+  name: 'name',
+  email: 'email',
+  soldPrice: 'soldPrice',
+  isCaptain: 'isCaptain',
+  matchesPlayed: 'matchesPlayed',
+  customRating: 'customRating',
+  customMatches: 'customMatches',
+  customWins: 'customWins',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.TournamentPointScalarFieldEnum = {
+  id: 'id',
+  gameId: 'gameId',
+  scorerId: 'scorerId',
+  pointType: 'pointType',
+  timestamp: 'timestamp',
+  tournamentTeamId: 'tournamentTeamId'
+};
+
+exports.Prisma.TournamentEnrollmentScalarFieldEnum = {
+  id: 'id',
+  tournamentId: 'tournamentId',
+  userId: 'userId',
+  name: 'name',
+  email: 'email',
+  mobile: 'mobile',
+  paymentMode: 'paymentMode',
+  paymentScreenshotUrl: 'paymentScreenshotUrl',
+  transactionId: 'transactionId',
+  status: 'status',
+  adminNotes: 'adminNotes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.EmailLogScalarFieldEnum = {
+  id: 'id',
+  recipient: 'recipient',
+  subject: 'subject',
+  body: 'body',
+  status: 'status',
+  error: 'error',
+  createdAt: 'createdAt',
+  sentAt: 'sentAt'
+};
+
+exports.Prisma.VerificationTokenScalarFieldEnum = {
+  identifier: 'identifier',
+  token: 'token',
+  expires: 'expires',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -343,10 +438,25 @@ exports.Role = exports.$Enums.Role = {
   MEMBER: 'MEMBER'
 };
 
+exports.TournamentRole = exports.$Enums.TournamentRole = {
+  MANAGER: 'MANAGER',
+  CO_OWNER: 'CO_OWNER',
+  REFEREE: 'REFEREE',
+  AUCTIONEER: 'AUCTIONEER',
+  TEAM_OWNER: 'TEAM_OWNER',
+  PLAYER: 'PLAYER'
+};
+
 exports.WinningTeam = exports.$Enums.WinningTeam = {
   A: 'A',
   B: 'B',
   DRAW: 'DRAW'
+};
+
+exports.GameStatus = exports.$Enums.GameStatus = {
+  SCHEDULED: 'SCHEDULED',
+  IN_PROGRESS: 'IN_PROGRESS',
+  COMPLETED: 'COMPLETED'
 };
 
 exports.PaymentType = exports.$Enums.PaymentType = {
@@ -365,6 +475,17 @@ exports.ActivityType = exports.$Enums.ActivityType = {
   PAYMENT_MADE: 'PAYMENT_MADE'
 };
 
+exports.PaymentMode = exports.$Enums.PaymentMode = {
+  ONLINE: 'ONLINE',
+  CASH: 'CASH'
+};
+
+exports.EnrollmentStatus = exports.$Enums.EnrollmentStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
+};
+
 exports.Prisma.ModelName = {
   AppConfig: 'AppConfig',
   ClerkUser: 'ClerkUser',
@@ -378,13 +499,19 @@ exports.Prisma.ModelName = {
   SessionPairHistory: 'SessionPairHistory',
   SessionPlayerStats: 'SessionPlayerStats',
   Tournament: 'Tournament',
+  TournamentMember: 'TournamentMember',
   TournamentTeam: 'TournamentTeam',
   TournamentGame: 'TournamentGame',
   Stage: 'Stage',
   Payment: 'Payment',
   Notification: 'Notification',
   Activity: 'Activity',
-  CalendarEvent: 'CalendarEvent'
+  CalendarEvent: 'CalendarEvent',
+  TournamentPlayer: 'TournamentPlayer',
+  TournamentPoint: 'TournamentPoint',
+  TournamentEnrollment: 'TournamentEnrollment',
+  EmailLog: 'EmailLog',
+  VerificationToken: 'VerificationToken'
 };
 
 /**

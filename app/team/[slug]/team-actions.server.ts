@@ -136,3 +136,14 @@ export async function deleteSessionAction(teamSlug: string, sessionId: string) {
   await prisma.session.delete({ where: { id: sessionId } });
   revalidatePath(`/team/${teamSlug}`);
 }
+
+/* ---------------- CHECK DB CONNECTION ---------------- */
+export async function checkDbConnection() {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    return true;
+  } catch (error) {
+    console.error("Database connection check failed:", error);
+    return false;
+  }
+}

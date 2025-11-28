@@ -6,7 +6,7 @@ export default function MainFooter() {
         <footer className="w-full border-t border-primary/10 bg-background/50">
             {/* Increased vertical padding (py-12) for a more "spacious" feel 
       */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="w-full px-4 sm:px-6 lg:px-8 py-12">
                 {/*
           - flex-col: Stacks children vertically
           - items-center: Centers the stack horizontally

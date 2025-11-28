@@ -50,12 +50,12 @@ export default function AddMemberDrawer({ slug }: { slug: string }) {
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
       <DrawerTrigger asChild>
-        <Button variant="default">
+        <Button variant="default" className="glass-btn-primary">
           <UserPlus size={16} className="mr-1.5" />
           Add Member
         </Button>
       </DrawerTrigger>
-      
+
       <DrawerContent className="bg-card/90 backdrop-blur-md border-t border-primary/20">
         <div className="max-w-md mx-auto w-full">
           <DrawerHeader>
@@ -91,7 +91,7 @@ export default function AddMemberDrawer({ slug }: { slug: string }) {
           </div>
 
           <DrawerFooter>
-            <Button onClick={handleAdd} disabled={isPending}>
+            <Button onClick={handleAdd} disabled={isPending} className="glass-btn-primary">
               {isPending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
@@ -99,7 +99,7 @@ export default function AddMemberDrawer({ slug }: { slug: string }) {
               )}
             </Button>
             <DrawerClose asChild>
-              <Button variant="outline" disabled={isPending}>
+              <Button variant="outline" disabled={isPending} className="glass-btn-secondary">
                 Cancel
               </Button>
             </DrawerClose>

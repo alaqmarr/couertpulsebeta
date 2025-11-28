@@ -12,7 +12,8 @@ import {
 } from "@/components/ui/table";
 import { toast } from "react-hot-toast";
 import { Loader2, Trophy, Info, Medal } from "lucide-react";
-import { cn } from "@/lib/utils"; // Assuming you have this from shadcn
+import { cn } from "@/lib/utils";
+import { useSessionSync } from "@/hooks/useSessionSync";
 
 interface LeaderboardEntry {
     id: string;
@@ -21,6 +22,7 @@ interface LeaderboardEntry {
     wins: number;
     losses: number;
     winRate: number;
+    pointsDiff: number;
 }
 
 /**
@@ -29,7 +31,6 @@ interface LeaderboardEntry {
 function getWinRateColorClass(winRate: number): string {
     if (winRate < 20) return "text-red-500";
     if (winRate < 40) return "text-red-400";
-    if (winRate < 50) return "text-yellow-500";
     if (winRate < 60) return "text-yellow-400";
     if (winRate < 80) return "text-green-400";
     return "text-green-500";
@@ -38,13 +39,13 @@ function getWinRateColorClass(winRate: number): string {
 export default function SessionLeaderboard({ sessionId }: { sessionId: string }) {
     const [isPending, startTransition] = useTransition();
     const [stats, setStats] = useState<LeaderboardEntry[]>([]);
+    const { data: syncData } = useSessionSync(sessionId);
 
     useEffect(() => {
         if (!sessionId) return;
 
         startTransition(async () => {
             try {
-                // This API route is an assumption, update it if incorrect
                 const res = await fetch(`/api/session/${sessionId}/leaderboard`);
                 if (!res.ok) throw new Error("Failed to fetch");
                 const data = await res.json();
@@ -53,36 +54,35 @@ export default function SessionLeaderboard({ sessionId }: { sessionId: string })
                 toast.error("Failed to load session leaderboard.");
             }
         });
-    }, [sessionId]);
+    }, [sessionId, syncData]);
 
     if (isPending && stats.length === 0) {
         return (
-            <Card className="bg-card/70 backdrop-blur-sm border border-primary/10">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                        <Trophy size={18} />
-                        Session Leaderboard
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="flex items-center justify-center h-24">
-                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                </CardContent>
-            </Card>
+            <div className="glass-panel rounded-xl p-1">
+                <div className="p-6">
+                    <div className="flex items-center gap-2 mb-6">
+                        <Trophy size={20} className="text-primary" />
+                        <h2 className="text-xl font-bold tracking-tight">Session Leaderboard</h2>
+                    </div>
+                    <div className="flex items-center justify-center h-48">
+                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                    </div>
+                </div>
+            </div>
         );
     }
 
     return (
-        <Card className="bg-card/70 backdrop-blur-sm border border-primary/10">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                    <Trophy size={18} />
-                    Session Leaderboard
-                </CardTitle>
-            </CardHeader>
-            <CardContent>
+        <div className="glass-panel rounded-xl p-1">
+            <div className="p-6">
+                <div className="flex items-center gap-2 mb-6">
+                    <Trophy size={20} className="text-primary" />
+                    <h2 className="text-xl font-bold tracking-tight">Session Leaderboard</h2>
+                </div>
+
                 {stats.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed border-primary/20 rounded-lg bg-muted/50">
-                        <Info size={24} className="text-primary" />
+                    <div className="flex flex-col items-center justify-center gap-2 p-8 border-2 border-dashed border-primary/10 rounded-xl bg-muted/5">
+                        <Info size={24} className="text-primary/50" />
                         <p className="text-muted-foreground text-sm text-center">
                             No games played yet.
                             <br />
@@ -90,37 +90,39 @@ export default function SessionLeaderboard({ sessionId }: { sessionId: string })
                         </p>
                     </div>
                 ) : (
-                    <div className="w-full overflow-x-auto">
+                    <div className="w-full overflow-hidden rounded-lg border border-white/5 bg-background/20">
                         <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="w-[40px] px-2">#</TableHead>
-                                    <TableHead>Player</TableHead>
-                                    <TableHead className="text-right">Plays</TableHead>
-                                    <TableHead className="text-right">Wins</TableHead>
-                                    <TableHead className="text-right">Losses</TableHead>
-                                    <TableHead className="text-right">Win Rate</TableHead>
+                            <TableHeader className="bg-muted/30">
+                                <TableRow className="hover:bg-transparent border-white/5">
+                                    <TableHead className="w-[50px] px-4 text-xs font-semibold uppercase tracking-wider">#</TableHead>
+                                    <TableHead className="text-xs font-semibold uppercase tracking-wider">Player</TableHead>
+                                    <TableHead className="text-right text-xs font-semibold uppercase tracking-wider">Plays</TableHead>
+                                    <TableHead className="text-right text-xs font-semibold uppercase tracking-wider">W/L</TableHead>
+                                    <TableHead className="text-right text-xs font-semibold uppercase tracking-wider">Diff</TableHead>
+                                    <TableHead className="text-right text-xs font-semibold uppercase tracking-wider">Win Rate</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {stats.map((p, index) => (
-                                    <TableRow key={p.id}>
-                                        <TableCell className="font-medium px-2">
+                                    <TableRow key={p.id} className="hover:bg-white/5 border-white/5 transition-colors">
+                                        <TableCell className="font-medium px-4">
                                             {index === 0 ? (
-                                                <Medal className="w-5 h-5 text-yellow-500" />
+                                                <Medal className="w-5 h-5 text-yellow-500 drop-shadow-sm" />
                                             ) : (
-                                                index + 1
+                                                <span className="text-muted-foreground text-sm">{index + 1}</span>
                                             )}
                                         </TableCell>
                                         <TableCell className="font-medium">
                                             {p.displayName}
                                         </TableCell>
-                                        <TableCell className="text-right">{p.plays}</TableCell>
-                                        <TableCell className="text-right font-medium text-green-500">
-                                            {p.wins}
+                                        <TableCell className="text-right text-muted-foreground">{p.plays}</TableCell>
+                                        <TableCell className="text-right font-medium">
+                                            <span className="text-green-500">{p.wins}</span>
+                                            <span className="text-muted-foreground mx-1">/</span>
+                                            <span className="text-red-500">{p.losses}</span>
                                         </TableCell>
-                                        <TableCell className="text-right font-medium text-red-500">
-                                            {p.losses}
+                                        <TableCell className={`text-right font-medium ${(p.pointsDiff || 0) > 0 ? "text-green-400" : (p.pointsDiff || 0) < 0 ? "text-red-400" : "text-muted-foreground"}`}>
+                                            {(p.pointsDiff || 0) > 0 ? "+" : ""}{p.pointsDiff || 0}
                                         </TableCell>
                                         <TableCell
                                             className={cn(
@@ -136,7 +138,7 @@ export default function SessionLeaderboard({ sessionId }: { sessionId: string })
                         </Table>
                     </div>
                 )}
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }

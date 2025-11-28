@@ -16,9 +16,9 @@ export default function MainHeader() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.5, ease: "easeInOut" }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="relative flex h-16 items-center">
-          
+
           {/* Left Spacer (to help center the logo) */}
           <div className="flex-1" />
 
@@ -29,7 +29,7 @@ export default function MainHeader() {
               className="flex items-center gap-2 group"
             >
               {/* Replace Shield with your <Image /> logo if you have one */}
-              
+
               <Image src={'/logo.png'} alt="CourtPulse Logo" width={160} height={40} />
             </Link>
           </div>

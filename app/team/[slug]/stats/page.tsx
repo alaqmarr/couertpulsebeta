@@ -1,18 +1,17 @@
-// Imports (Data, UI, and Icons)
 import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { LoadingCard } from "@/components/LoadingCard";
-import { cn } from "@/lib/utils"; // Import your utility function
+import { cn } from "@/lib/utils";
 
 // Custom Components
 import TeamLeaderboard from "./Leaderboard";
 import PlayerStatsGrid from "@/components/PlayerStatsGrid";
 
 // Icons
-import { BarChart3, Users2, Info, Trophy, Percent } from "lucide-react";
+import { BarChart3, Users2, Info } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -67,7 +66,7 @@ export default async function TeamStatsPage({
                     </p>
                 </section>
 
-                <Separator className="bg-border/50" />
+                <Separator className="bg-white/10" />
 
                 {/* ---------------- TWO COLUMN LAYOUT ---------------- */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
@@ -75,14 +74,11 @@ export default async function TeamStatsPage({
                     {/* ---------------- MAIN CONTENT (Left) ---------------- */}
                     <div className="lg:col-span-2 space-y-8">
                         {/* ---------------- PLAYER STATS ---------------- */}
-                        <section>
+                        <section className="glass-panel p-6">
                             <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
                                 <Users2 size={22} />
                                 Individual Player Performance
                             </h2>
-                            {/* 💡 TODO: Apply glass styles to your <PlayerStatsGrid> component. 
-                  See instructions below. 
-              */}
                             <Suspense
                                 fallback={<LoadingCard title="Loading Player Stats..." />}
                             >
@@ -91,7 +87,7 @@ export default async function TeamStatsPage({
                         </section>
 
                         {/* ---------------- PAIR PERFORMANCE ---------------- */}
-                        <section>
+                        <section className="glass-panel p-6">
                             <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
                                 <Users2 size={22} />
                                 Best Pairs
@@ -111,34 +107,34 @@ export default async function TeamStatsPage({
                                             const winRateColor = getWinRateColorClass(winRate);
 
                                             return (
-                                                <Card
+                                                <div
                                                     key={pair.id}
-                                                    className="bg-card/70 backdrop-blur-sm border border-primary/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10"
+                                                    className="glass-card rounded-xl border-primary/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10"
                                                 >
-                                                    <CardHeader>
-                                                        <CardTitle className="text-lg">
+                                                    <div className="p-6">
+                                                        <div className="text-lg font-semibold mb-2">
                                                             {await getNamefromDb(pair.playerA)} & {await getNamefromDb(pair.playerB)}
-                                                        </CardTitle>
-                                                    </CardHeader>
-                                                    <CardContent className="flex justify-between items-center">
-                                                        <div className="text-sm">
-                                                            <p className="font-medium text-foreground">
-                                                                {pair.wins} Wins
-                                                            </p>
-                                                            <p className="text-muted-foreground">
-                                                                {pair.plays} Matches
-                                                            </p>
                                                         </div>
-                                                        <div
-                                                            className={cn(
-                                                                "text-2xl font-bold text-right",
-                                                                winRateColor
-                                                            )}
-                                                        >
-                                                            {winRate.toFixed(0)}%
+                                                        <div className="flex justify-between items-center">
+                                                            <div className="text-sm">
+                                                                <p className="font-medium text-foreground">
+                                                                    {pair.wins} Wins
+                                                                </p>
+                                                                <p className="text-muted-foreground">
+                                                                    {pair.plays} Matches
+                                                                </p>
+                                                            </div>
+                                                            <div
+                                                                className={cn(
+                                                                    "text-2xl font-bold text-right",
+                                                                    winRateColor
+                                                                )}
+                                                            >
+                                                                {winRate.toFixed(0)}%
+                                                            </div>
                                                         </div>
-                                                    </CardContent>
-                                                </Card>
+                                                    </div>
+                                                </div>
                                             );
                                         })}
                                 </div>
@@ -149,9 +145,6 @@ export default async function TeamStatsPage({
                     {/* ---------------- SIDEBAR (Right) ---------------- */}
                     <aside className="lg:col-span-1 lg:sticky lg:top-24 space-y-8">
                         {/* ---------------- TEAM LEADERBOARD ---------------- */}
-                        {/* 💡 TODO: Apply glass styles to your <TeamLeaderboard> component. 
-                See instructions below. 
-            */}
                         <Suspense
                             fallback={<LoadingCard title="Loading Leaderboard..." />}
                         >
@@ -167,7 +160,7 @@ export default async function TeamStatsPage({
 // Helper component for empty state
 function EmptyState({ text }: { text: string }) {
     return (
-        <div className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed border-primary/20 rounded-lg bg-muted/50">
+        <div className="flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed border-primary/20 rounded-lg bg-muted/5">
             <Info size={24} className="text-primary" />
             <p className="text-muted-foreground text-sm text-center">{text}</p>
         </div>

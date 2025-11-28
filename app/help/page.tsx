@@ -62,41 +62,42 @@ export default function HelpPage() {
     ]
 
     return (
-        <main className="min-h-screen bg-background text-foreground">
-            <div className="max-w-6xl mx-auto p-8 lg:p-12 space-y-12">
+        <main className="min-h-screen text-foreground p-4 md:p-8">
+            <div className="max-w-5xl mx-auto glass-panel rounded-xl p-6 md:p-10 space-y-10">
                 {/* ---------------- HEADER ---------------- */}
-                <section className="space-y-3">
-                    <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2.5">
+                <section className="space-y-3 text-center md:text-left">
+                    <h1 className="text-3xl font-bold tracking-tight flex items-center justify-center md:justify-start gap-2.5">
                         <HelpCircle className="w-7 h-7 text-primary" />
                         Help & Support
                     </h1>
-                    <p className="text-muted-foreground max-w-2xl">
+                    <p className="text-muted-foreground max-w-2xl mx-auto md:mx-0">
                         Find answers to common questions, or contact our support team for
                         further assistance.
                     </p>
                 </section>
 
-                <Separator />
+                <Separator className="bg-white/10" />
 
                 {/* ---------------- MAIN GRID (FAQ | CONTACT) ---------------- */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-16 gap-y-10">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-12 gap-y-10">
 
                     {/* ---------------- FAQ SECTION (MAIN COL) ---------------- */}
                     <section className="lg:col-span-2">
-                        <h2 className="text-2xl font-semibold mb-6">
+                        <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+                            <LifeBuoy className="w-5 h-5 text-primary" />
                             Frequently Asked Questions
                         </h2>
-                        <Accordion type="single" collapsible className="w-full space-y-2">
+                        <Accordion type="single" collapsible className="w-full space-y-3">
                             {faqs.map((faq) => (
                                 <AccordionItem
                                     value={faq.question}
                                     key={faq.question}
-                                    className="border border-primary/10 bg-card/70 backdrop-blur-sm rounded-lg px-4"
+                                    className="glass-card rounded-lg px-4 border-none"
                                 >
-                                    <AccordionTrigger className="text-base font-medium text-left hover:no-underline">
+                                    <AccordionTrigger className="text-base font-medium text-left hover:no-underline py-4">
                                         {faq.question}
                                     </AccordionTrigger>
-                                    <AccordionContent className="text-sm text-muted-foreground leading-relaxed pt-2 pb-4">
+                                    <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
                                         {faq.answer}
                                     </AccordionContent>
                                 </AccordionItem>
@@ -106,7 +107,10 @@ export default function HelpPage() {
 
                     {/* ---------------- CONTACT OPTIONS (SIDEBAR) ---------------- */}
                     <section className="lg:col-span-1">
-                        <h2 className="text-2xl font-semibold mb-6">Contact Us</h2>
+                        <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+                            <Mail className="w-5 h-5 text-primary" />
+                            Contact Us
+                        </h2>
                         <div className="space-y-4">
                             {contacts.map((c) => (
                                 <Link
@@ -116,19 +120,17 @@ export default function HelpPage() {
                                     rel="noopener noreferrer"
                                     className="block"
                                 >
-                                    <Card className="hover:-translate-y-1 hover:shadow-lg transition-transform border-primary/10 bg-card/70 backdrop-blur-sm">
-                                        <div className="p-4 flex flex-row items-start gap-4">
-                                            <c.icon className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
-                                            <div className="space-y-0.5">
-                                                <p className="font-semibold text-card-foreground">
-                                                    {c.title}
-                                                </p>
-                                                <p className="text-sm text-muted-foreground">
-                                                    {c.description}
-                                                </p>
-                                            </div>
+                                    <div className="glass-card rounded-lg p-4 flex flex-row items-start gap-4 hover:scale-[1.02] transition-transform cursor-pointer">
+                                        <c.icon className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+                                        <div className="space-y-1">
+                                            <p className="font-semibold text-foreground">
+                                                {c.title}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {c.description}
+                                            </p>
                                         </div>
-                                    </Card>
+                                    </div>
                                 </Link>
                             ))}
                         </div>
@@ -136,7 +138,7 @@ export default function HelpPage() {
                 </div>
 
                 {/* ---------------- FOOTER ---------------- */}
-                <Separator />
+                <Separator className="bg-white/10" />
                 <section className="text-center text-xs text-muted-foreground">
                     <p>
                         CourtPulse © {new Date().getFullYear()} · Built with precision for

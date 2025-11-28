@@ -1,20 +1,20 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { ClerkProvider } from "@clerk/nextjs";
-import { Toaster } from "react-hot-toast";
-
-// Import the new layout components
+import { cookies } from "next/headers";
+import { AdminActivationBanner } from "@/components/admin/AdminActivationBanner";
+import { getOrCreateUser } from "@/lib/clerk";
 import MainHeader from "@/components/layout/MainHeader";
 import MainFooter from "@/components/layout/MainFooter";
 import { DockDemo } from "@/components/Dock";
-import { getOrCreateUser } from "@/lib/clerk";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
+import { Outfit } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
+import { Toaster } from "react-hot-toast";
+import "./globals.css";
+import type { Metadata } from "next";
 
-import { Poppins } from "next/font/google";
-const poppins = Poppins({
+const outfit = Outfit({
   subsets: ["latin"],
-  weight: ["400", "700"],
-  variable: "--font-poppins",
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-outfit",
 });
 
 export const metadata: Metadata = {
@@ -28,14 +28,24 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const user = await getOrCreateUser();
+  const cookieStore = await cookies();
+  const isAdmin = user?.email === "alaqmarak0810@gmail.com";
+  const isActivated = cookieStore.get("admin_session")?.value === "true";
+  const showAdminBanner = isAdmin && !isActivated;
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${poppins.className} antialiased text-foreground`}
+        className={`${outfit.className} antialiased text-foreground`}
       >
+        <GoogleAnalytics gaId="G-2WPNMVD1D5" />
         <ClerkProvider>
           {/* Wrapper for sticky footer layout */}
           <div className="flex flex-col min-h-screen">
+
+            {showAdminBanner && user?.email && (
+              <AdminActivationBanner email={user.email} />
+            )}
 
             {/* --- Main Header --- */}
             <MainHeader />

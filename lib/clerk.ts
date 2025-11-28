@@ -51,11 +51,18 @@ export async function getOrCreateUser() {
   }
 
   // --- 2) Ensure internal User record exists and links properly ---
-  let appUser = await prisma.user.findFirst({
-    where: {
-      OR: [{ clerkUserId: clerkUser.id }, { email }],
-    },
+  // --- 2) Ensure internal User record exists and links properly ---
+  // First try to find by clerkUserId (most reliable)
+  let appUser = await prisma.user.findUnique({
+    where: { clerkUserId: clerkUser.id },
   });
+
+  // If not found, try to find by email (legacy/placeholder users)
+  if (!appUser) {
+    appUser = await prisma.user.findUnique({
+      where: { email },
+    });
+  }
 
   // Create if missing
   if (!appUser) {
@@ -116,7 +123,7 @@ export async function syncClerkUser(clerkId: string) {
   });
   if (!clerkUser) return null;
 
-  const appUser = await prisma.user.findFirst({
+  const appUser = await prisma.user.findUnique({
     where: { clerkUserId: clerkId },
   });
   if (!appUser) return null;

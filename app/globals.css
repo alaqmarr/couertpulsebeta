@@ -70,42 +70,51 @@
 }
 
 :root {
-  /* === MODIFIED: Light Mode Palette === */
-  --radius: 0.5rem;
-  --background: oklch(0.99 0.005 240); /* Cool, almost-white */
-  --foreground: oklch(0.1 0.05 240); /* Dark, cool blue-gray text */
+  /* === MODIFIED: Light Mode Palette (Sunset & Gold) === */
+  --radius: 1rem; /* Kept the rounder look */
+  --background: oklch(0.99 0.01 85); /* Warm, almost-white (tinted with gold) */
+  --foreground: oklch(0.15 0.05 55); /* Dark warm brown-gray */
   --card: oklch(1 0 0); /* Pure white cards */
-  --card-foreground: oklch(0.1 0.05 240);
+  --card-foreground: oklch(0.15 0.05 55);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.1 0.05 240);
+  --popover-foreground: oklch(0.15 0.05 55);
 
-  --primary: oklch(0.60 0.15 155); /* Badminton Court Green */
+  /* Primary: Sunset Orange #E2852E */
+  --primary: oklch(0.68 0.18 55); 
   --primary-foreground: oklch(1 0 0); /* White */
   
-  --secondary: oklch(0.6 0.1 220); /* Analytics Blue */
-  --secondary-foreground: oklch(1 0 0); /* White */
+  /* Secondary: Golden Yellow #F5C857 */
+  --secondary: oklch(0.84 0.17 83); 
+  --secondary-foreground: oklch(0.2 0.05 55); /* Dark text for contrast on yellow */
   
-  --muted: oklch(0.95 0.01 240); /* Light gray-blue */
-  --muted-foreground: oklch(0.4 0.03 240); /* Medium gray-blue */
+  /* Muted: Warm Gray */
+  --muted: oklch(0.96 0.01 85); 
+  --muted-foreground: oklch(0.55 0.05 55); 
   
-  --accent: oklch(0.7 0.18 100); /* Shuttlecock Lime/Yellow */
-  --accent-foreground: oklch(0.1 0.05 100); /* Dark text on accent */
+  /* Accent: Sky Blue #ABE0F0 */
+  --accent: oklch(0.89 0.06 219); 
+  --accent-foreground: oklch(0.2 0.05 220); 
   
-  --destructive: oklch(0.6 0.18 25); /* Clear Red */
-  --destructive-foreground: oklch(1.0000 0 0);
+  /* Destructive: Vibrant Red #FF5555 */
+  --destructive: oklch(0.67 0.22 26); 
+  --destructive-foreground: oklch(1 0 0);
   
-  --border: oklch(0.9 0.01 240);
-  --input: oklch(0.9 0.01 240);
-  --ring: oklch(0.60 0.15 155); /* Green ring */
+  /* Success: Fresh Green #A3D78A (Added variable) */
+  --success: oklch(0.84 0.13 135);
+  --success-foreground: oklch(0.15 0.05 135);
+
+  --border: oklch(0.92 0.02 85);
+  --input: oklch(0.92 0.02 85);
+  --ring: oklch(0.68 0.18 55); /* Primary ring */
 
   /* Chart Colors */
-  --chart-1: oklch(0.60 0.15 155); /* Green */
-  --chart-2: oklch(0.6 0.1 220); /* Blue */
-  --chart-3: oklch(0.7 0.18 100); /* Lime */
-  --chart-4: oklch(0.6 0.18 25); /* Red */
-  --chart-5: oklch(0.6 0.15 290); /* Purple */
+  --chart-1: oklch(0.68 0.18 55); /* Orange */
+  --chart-2: oklch(0.84 0.17 83); /* Yellow */
+  --chart-3: oklch(0.89 0.06 219); /* Blue */
+  --chart-4: oklch(0.67 0.22 26); /* Red */
+  --chart-5: oklch(0.84 0.13 135); /* Green */
 
-  /* Sidebar (Kept user's original mapping, now using new colors) */
+  /* Sidebar */
   --sidebar: var(--background);
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--primary);
@@ -119,62 +128,67 @@
   --font-sans: Outfit, sans-serif;
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-mono: Space Mono, monospace;
-  --shadow-color: hsl(196 83% 10%);
-  --shadow-opacity: 0.15;
+  --shadow-color: oklch(0.68 0.18 55); /* Shadow tinted with primary */
+  --shadow-opacity: 0.1;
   --shadow-blur: 4px;
   --shadow-spread: 0px;
   --shadow-offset-x: 2px;
   --shadow-offset-y: 2px;
   --letter-spacing: 0em;
   --spacing: 0.25rem;
-  --shadow-2xs: 2px 2px 4px 0px hsl(196 83% 10% / 0.07);
-  --shadow-xs: 2px 2px 4px 0px hsl(196 83% 10% / 0.07);
-  --shadow-sm: 2px 2px 4px 0px hsl(196 83% 10% / 0.15), 2px 1px 2px -1px hsl(196 83% 10% / 0.15);
-  --shadow: 2px 2px 4px 0px hsl(196 83% 10% / 0.15), 2px 1px 2px -1px hsl(196 83% 10% / 0.15);
-  --shadow-md: 2px 2px 4px 0px hsl(196 83% 10% / 0.15), 2px 2px 4px -1px hsl(196 83% 10% / 0.15);
-  --shadow-lg: 2px 2px 4px 0px hsl(196 83% 10% / 0.15), 2px 4px 6px -1px hsl(196 83% 10% / 0.15);
-  --shadow-xl: 2px 2px 4px 0px hsl(196 83% 10% / 0.15), 2px 8px 10px -1px hsl(196 83% 10% / 0.15);
-  --shadow-2xl: 2px 2px 4px 0px hsl(196 83% 10% / 0.38);
+  --shadow-2xs: 2px 2px 4px 0px rgba(0,0,0,0.05);
+  --shadow-xs: 2px 2px 4px 0px rgba(0,0,0,0.05);
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
   --tracking-normal: 0em;
 }
 
 .dark {
-  /* === MODIFIED: Dark Mode Palette === */
-  --radius: 0.5rem;
-  --background: oklch(0.1 0.03 220); /* Deep midnight blue */
-  --foreground: oklch(0.95 0.01 220); /* Very light blue-gray text */
-  --card: oklch(0.13 0.04 220); /* Slightly lighter blue-gray */
-  --card-foreground: oklch(0.95 0.01 220);
-  --popover: oklch(0.13 0.04 220);
-  --popover-foreground: oklch(0.95 0.01 220);
+  /* === MODIFIED: Dark Mode Palette (Deep Warmth) === */
+  --radius: 1rem;
+  --background: oklch(0.12 0.03 55); /* Deep warm brown-black */
+  --foreground: oklch(0.98 0.01 85); /* Off-white */
+  --card: oklch(0.15 0.04 55); /* Slightly lighter */
+  --card-foreground: oklch(0.98 0.01 85);
+  --popover: oklch(0.15 0.04 55);
+  --popover-foreground: oklch(0.98 0.01 85);
 
-  --primary: oklch(0.60 0.15 155); /* Badminton Court Green */
+  /* Primary: Sunset Orange (Slightly lighter for dark mode) */
+  --primary: oklch(0.72 0.18 55); 
   --primary-foreground: oklch(1 0 0);
   
-  --secondary: oklch(0.6 0.1 220); /* Analytics Blue */
-  --secondary-foreground: oklch(1 0 0);
+  /* Secondary: Golden Yellow */
+  --secondary: oklch(0.84 0.17 83); 
+  --secondary-foreground: oklch(0.2 0.05 55);
   
-  --muted: oklch(0.18 0.04 220); /* Darker muted */
-  --muted-foreground: oklch(0.6 0.02 220); /* Lighter muted text */
+  /* Muted */
+  --muted: oklch(0.2 0.03 55); 
+  --muted-foreground: oklch(0.7 0.05 55);
   
-  --accent: oklch(0.7 0.18 100); /* Shuttlecock Lime/Yellow */
-  --accent-foreground: oklch(0.1 0.05 100);
+  /* Accent: Sky Blue */
+  --accent: oklch(0.89 0.06 219); 
+  --accent-foreground: oklch(0.2 0.05 220);
   
-  --destructive: oklch(0.6 0.18 25); /* Clear Red */
-  --destructive-foreground: oklch(1.0000 0 0);
+  /* Destructive */
+  --destructive: oklch(0.67 0.22 26); 
+  --destructive-foreground: oklch(1 0 0);
   
-  --border: oklch(0.2 0.04 220);
-  --input: oklch(0.2 0.04 220);
-  --ring: oklch(0.60 0.15 155); /* Green ring */
+  --border: oklch(0.25 0.03 55);
+  --input: oklch(0.25 0.03 55);
+  --ring: oklch(0.72 0.18 55);
 
   /* Chart Colors */
-  --chart-1: oklch(0.60 0.15 155); /* Green */
-  --chart-2: oklch(0.6 0.1 220); /* Blue */
-  --chart-3: oklch(0.7 0.18 100); /* Lime */
-  --chart-4: oklch(0.6 0.18 25); /* Red */
-  --chart-5: oklch(0.6 0.15 290); /* Purple */
+  --chart-1: oklch(0.72 0.18 55);
+  --chart-2: oklch(0.84 0.17 83);
+  --chart-3: oklch(0.89 0.06 219);
+  --chart-4: oklch(0.67 0.22 26);
+  --chart-5: oklch(0.84 0.13 135);
 
-  /* Sidebar (Kept user's original mapping, now using new colors) */
+  /* Sidebar */
   --sidebar: var(--background);
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--primary);
@@ -183,27 +197,9 @@
   --sidebar-accent-foreground: var(--accent-foreground);
   --sidebar-border: var(--border);
   --sidebar-ring: var(--ring);
-
-  /* Unchanged */
-  --font-sans: Outfit, sans-serif;
-  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-mono: Space Mono, monospace;
-  --shadow-color: hsl(196 83% 10%);
-  --shadow-opacity: 0.15;
-  --shadow-blur: 4px;
-  --shadow-spread: 0px;
-  --shadow-offset-x: 2px;
-  --shadow-offset-y: 2px;
-  --letter-spacing: 0em;
-  --spacing: 0.25rem;
-  --shadow-2xs: 2px 2px 4px 0px hsl(196 83% 10% / 0.07);
-  --shadow-xs: 2px 2px 4px 0px hsl(196 83% 10% / 0.07);
-  --shadow-sm: 2px 2px 4px 0px hsl(196 83% 10% / 0.15), 2px 1px 2px -1px hsl(196 83% 10% / 0.15);
-  --shadow: 2px 2px 4px 0px hsl(196 83% 10% / 0.15), 2px 1px 2px -1px hsl(196 83% 10% / 0.15);
-  --shadow-md: 2px 2px 4px 0px hsl(196 83% 10% / 0.15), 2px 2px 4px -1px hsl(196 83% 10% / 0.15);
-  --shadow-lg: 2px 2px 4px 0px hsl(196 83% 10% / 0.15), 2px 4px 6px -1px hsl(196 83% 10% / 0.15);
-  --shadow-xl: 2px 2px 4px 0px hsl(196 83% 10% / 0.15), 2px 8px 10px -1px hsl(196 83% 10% / 0.15);
-  --shadow-2xl: 2px 2px 4px 0px hsl(196 83% 10% / 0.38);
+  
+  --shadow-color: oklch(0 0 0);
+  --shadow-opacity: 0.3;
 }
 
 @layer base {
@@ -211,25 +207,202 @@
     @apply border-border outline-ring/50;
   }
   
-  /* MODIFIED: Added gradients and min-h-screen */
+  /* MODIFIED: Warm Sunset Gradient Background */
   body {
     @apply text-foreground min-h-screen;
     letter-spacing: var(--tracking-normal);
     
-    /* Subtle gradient for light mode */
-    background: linear-gradient(
-      to bottom right, 
-      var(--background) 0%, 
-      oklch(0.98 0.005 220) 100% /* Slightly different light blue */
-    );
+    background: 
+      /* Golden glow top left */
+      radial-gradient(circle at 10% 20%, oklch(0.84 0.17 83 / 0.15) 0%, transparent 40%),
+      /* Orange glow bottom right */
+      radial-gradient(circle at 90% 80%, oklch(0.68 0.18 55 / 0.1) 0%, transparent 40%),
+      /* Base warm gradient */
+      linear-gradient(to bottom right, oklch(0.99 0.01 85), oklch(0.97 0.02 70));
+    background-attachment: fixed;
   }
   
   .dark body {
-    /* Subtle gradient for dark mode */
-    background: linear-gradient(
-      to bottom right, 
-      var(--background) 0%, 
-      oklch(0.12 0.04 220) 100% /* Slightly lighter dark blue */
-    );
+    /* Dark Sunset Gradient */
+    background: 
+      radial-gradient(circle at 10% 20%, oklch(0.84 0.17 83 / 0.05) 0%, transparent 40%),
+      radial-gradient(circle at 90% 80%, oklch(0.68 0.18 55 / 0.05) 0%, transparent 40%),
+      linear-gradient(to bottom right, oklch(0.12 0.03 55), oklch(0.1 0.04 50));
+    background-attachment: fixed;
+  }
+
+  /* --- TYPOGRAPHY OVERHAUL (Cred-like) --- */
+  /* Base rule for all uppercase elements */
+  h1, h2, h3, h4, h5, h6, button, .btn, .badge, label, th, .uppercase-style {
+    @apply uppercase tracking-wider;
+  }
+
+  /* Hierarchy Levels - Adding Boldness */
+  h1, h2 {
+    @apply font-extrabold; /* 800 */
+  }
+
+  h3, h4, button, .btn {
+    @apply font-bold; /* 700 */
+  }
+
+  h5, h6, .badge, label, th {
+    @apply font-semibold; /* 600 */
+  }
+
+  /* Enforce lowercase for secondary/muted text as requested */
+  .text-muted-foreground, .text-sm, .text-xs, small, .lowercase-style {
+    @apply lowercase font-medium; /* Added font-medium for better readability in lowercase */
+  }
+  
+  /* Exception: Inputs should generally be normal case for usability, but let's see */
+  input, textarea {
+    @apply normal-case;
+  }
+}
+
+@layer utilities {
+  /* Enhanced Glass Utilities with "Creative Frost" */
+  /* Moving away from plain white transparency to tinted, rich gradients */
+  
+  /* === GLOBAL RADIUS UPDATE === */
+  :root {
+    --radius: 1rem; /* Increased from default 0.5rem for rounder look */
+  }
+
+  /* Enhanced Glass Utilities with "Organic Lift" & "Layered Depth" */
+  
+  /* LAYER 1: The Base Panel (Darker, Receded) */
+  .glass-panel {
+    @apply bg-white/5 backdrop-blur-xl rounded-xl border border-white/10;
+    /* Removed heavy shadows and complex gradients for a cleaner look */
+  }
+  
+  /* LAYER 2: The Card (Brighter, Floating on Panel) */
+  .glass-card {
+    /* Increased opacity slightly to separate from panel */
+    @apply bg-gradient-to-br from-white/20 via-white/10 to-white/5 backdrop-blur-2xl backdrop-saturate-150 shadow-xl transition-all duration-500 ease-out rounded-2xl border-0;
+    
+    /* Stronger definition against the panel */
+    box-shadow: 
+      0 8px 16px -4px rgba(0, 0, 0, 0.1), /* Lifted shadow */
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.5), /* Bright top edge */
+      inset 0 0 0 1px rgba(255, 255, 255, 0.2); /* Defined border */
+  }
+  
+  .glass-card:hover {
+    @apply -translate-y-1 bg-white/25;
+    box-shadow: 
+      0 25px 50px -12px rgba(0, 0, 0, 0.25), /* Deep dramatic shadow */
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.7),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+  }
+
+  /* LAYER 3: The Item (Brightest, Top Level) */
+  .glass-item {
+    /* Most opaque/bright to sit on top of cards */
+    @apply bg-gradient-to-r from-white/20 to-white/10 backdrop-blur-lg shadow-sm transition-all duration-300 rounded-xl border-0;
+    box-shadow: 
+      0 2px 4px rgba(0,0,0,0.05),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+  }
+  
+  .glass-item:hover {
+    @apply -translate-y-0.5 from-white/30 to-white/20;
+    box-shadow: 
+      0 8px 16px -4px rgba(0, 0, 0, 0.15),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  }
+  
+  .glass-button {
+    @apply bg-gradient-to-r from-primary/80 to-primary/60 backdrop-blur-xl text-primary-foreground shadow-lg transition-all duration-300 rounded-full border-0;
+    box-shadow: 
+      0 4px 14px 0 rgba(var(--primary), 0.39),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
+  }
+  
+  .glass-button:hover {
+    @apply -translate-y-0.5 from-primary/90 to-primary/80;
+    box-shadow: 
+      0 10px 20px -5px rgba(var(--primary), 0.5),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.6);
+  }
+
+  /* === COMPONENT FROSTING (Translucent & Glassy) === */
+  
+  /* Primary Button (Greenish) */
+  .glass-btn-primary {
+    @apply bg-primary/10 text-primary backdrop-blur-md shadow-sm transition-all duration-300 rounded-full border border-primary/20;
+  }
+  
+  .glass-btn-primary:hover {
+    @apply -translate-y-0.5 bg-primary/20 shadow-md;
+    box-shadow: 0 4px 12px -2px rgba(var(--primary), 0.2);
+  }
+
+  /* Destructive Button (Red) */
+  .glass-btn-destructive {
+    @apply bg-destructive/10 text-destructive backdrop-blur-md shadow-sm transition-all duration-300 rounded-full border border-destructive/20;
+  }
+  
+  .glass-btn-destructive:hover {
+    @apply -translate-y-0.5 bg-destructive/20 shadow-md;
+    box-shadow: 0 4px 12px -2px rgba(var(--destructive), 0.2);
+  }
+
+  /* Secondary Button (Blue/Neutral) */
+  .glass-btn-secondary {
+    @apply bg-secondary/10 text-secondary-foreground backdrop-blur-md shadow-sm transition-all duration-300 rounded-full border border-secondary/20;
+  }
+  
+  .glass-btn-secondary:hover {
+    @apply -translate-y-0.5 bg-secondary/20 shadow-md;
+  }
+
+  /* Outline Button */
+  .glass-btn-outline {
+    @apply bg-white/5 text-foreground backdrop-blur-md shadow-sm transition-all duration-300 rounded-full border border-white/10;
+  }
+  
+  .glass-btn-outline:hover {
+    @apply -translate-y-0.5 bg-white/10 border-white/20;
+  }
+
+  /* Ghost Button */
+  .glass-btn-ghost {
+    @apply text-foreground/70 transition-all duration-300 rounded-full hover:bg-white/10 hover:text-foreground;
+  }
+
+  /* === BADGES (Pill Shape - Matching Buttons) === */
+  .glass-badge-primary {
+    @apply bg-primary/10 text-primary backdrop-blur-md shadow-sm rounded-full border border-primary/20;
+  }
+
+  .glass-badge-destructive {
+    @apply bg-destructive/10 text-destructive backdrop-blur-md shadow-sm rounded-full border border-destructive/20;
+  }
+
+  .glass-badge-secondary {
+    @apply bg-secondary/10 text-secondary-foreground backdrop-blur-md shadow-sm rounded-full border border-secondary/20;
+  }
+  
+  .glass-badge-warning {
+    @apply bg-yellow-500/10 text-yellow-600 backdrop-blur-md shadow-sm rounded-full border border-yellow-500/20;
+  }
+  
+  .glass-badge-success {
+    @apply bg-green-500/10 text-green-600 backdrop-blur-md shadow-sm rounded-full border border-green-500/20;
+  }
+  
+  .glass-badge-info {
+    @apply bg-blue-500/10 text-blue-600 backdrop-blur-md shadow-sm rounded-full border border-blue-500/20;
+  }
+
+  .glass-badge-outline {
+    @apply bg-white/5 text-foreground/80 backdrop-blur-md rounded-full border border-white/10;
+  }
+
+  .text-shadow-sm {
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
   }
 }

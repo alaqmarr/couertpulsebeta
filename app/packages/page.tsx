@@ -1,4 +1,3 @@
-// Imports (Data, UI, and Icons)
 import { getOrCreateUser } from "@/lib/clerk";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -146,23 +145,21 @@ function PackageCard({
   // Pre-filled WhatsApp message
   const waMessage = encodeURIComponent(
     `Hello! I’m interested in purchasing the *${pkg.label}* plan on CourtPulse.\n\n` +
-      `My registered email is: ${userEmail}\n` +
-      `Please assist me with the activation.`
+    `My registered email is: ${userEmail}\n` +
+    `Please assist me with the activation.`
   );
   const waUrl = `https://wa.me/919618443558?text=${waMessage}`;
 
   return (
     <Card
       className={`relative flex flex-col justify-between rounded-xl border bg-card/70 backdrop-blur-sm transition-all duration-300
-        ${
-          isActive
-            ? "border-primary/50 ring-2 ring-primary/50 shadow-lg shadow-primary/10 -translate-y-1" // Active state is "permanently" lifted
-            : "border-primary/10 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10" // Inactive hover state
+        ${isActive
+          ? "border-primary/50 ring-2 ring-primary/50 shadow-lg shadow-primary/10 -translate-y-1" // Active state is "permanently" lifted
+          : "border-primary/10 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10" // Inactive hover state
         }
-        ${
-          pkg.isFeatured && !isActive
-            ? "shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30" // Featured (Pro) glow
-            : ""
+        ${pkg.isFeatured && !isActive
+          ? "shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30" // Featured (Pro) glow
+          : ""
         }
       `}
     >
@@ -170,7 +167,7 @@ function PackageCard({
       {pkg.isFeatured && (
         <Badge
           variant="default"
-          className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-amber-foreground hover:bg-amber-500"
+          className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-amber-foreground hover:bg-amber-500 glass-badge-warning"
         >
           <Star size={12} className="mr-1" />
           Best Value
@@ -180,7 +177,7 @@ function PackageCard({
       <CardHeader>
         <div className="flex items-center justify-between mb-2">
           <span className={pkg.isFeatured ? "text-amber-500" : "text-primary"}>{pkg.icon}</span>
-          {isActive && <Badge variant="secondary">Current Plan</Badge>}
+          {isActive && <Badge variant="secondary" className="glass-badge-success">Current Plan</Badge>}
         </div>
         <CardTitle>{pkg.label}</CardTitle>
         <CardDescription>{pkg.description}</CardDescription>
@@ -202,7 +199,7 @@ function PackageCard({
         <div className="mt-4">
           {!isActive && (
             <Button
-              className="w-full group"
+              className="w-full group glass-btn-primary"
               variant={pkg.isFeatured ? "default" : "secondary"}
               asChild
             >
@@ -213,7 +210,7 @@ function PackageCard({
             </Button>
           )}
           {isActive && (
-            <Button className="w-full" variant="outline" disabled>
+            <Button className="w-full glass-btn-secondary" variant="outline" disabled>
               <Check size={16} className="mr-2" />
               Active Plan
             </Button>
