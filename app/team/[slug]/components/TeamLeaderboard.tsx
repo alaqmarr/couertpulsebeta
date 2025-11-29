@@ -12,6 +12,7 @@ import {
 import { toast } from "react-hot-toast";
 import { Loader2, Trophy, Info, Medal } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getTeamLeaderboard } from "@/app/actions/leaderboard";
 
 interface PlayerStats {
     id: string;
@@ -41,17 +42,8 @@ export default function TeamLeaderboard({ teamId }: { teamId: string }) {
     useEffect(() => {
         startTransition(async () => {
             try {
-                const res = await fetch(`/api/team/${teamId}/leaderboard`);
-                if (!res.ok) throw new Error("Failed to fetch");
-                const data: PlayerStats[] = await res.json();
-
-                // Sort: first by win rate (descending), then by name (ascending)
-                const sortedData = data.sort((a, b) => {
-                    if (b.winRate !== a.winRate) return b.winRate - a.winRate;
-                    return a.name.localeCompare(b.name);
-                });
-
-                setStats(sortedData);
+                const data = await getTeamLeaderboard(teamId);
+                setStats(data);
             } catch {
                 toast.error("Failed to load leaderboard.");
             }

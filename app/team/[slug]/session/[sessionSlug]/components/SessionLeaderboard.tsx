@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
     Table,
     TableBody,
@@ -14,6 +13,7 @@ import { toast } from "react-hot-toast";
 import { Loader2, Trophy, Info, Medal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSessionSync } from "@/hooks/useSessionSync";
+import { getSessionLeaderboard } from "@/app/actions/leaderboard";
 
 interface LeaderboardEntry {
     id: string;
@@ -46,9 +46,7 @@ export default function SessionLeaderboard({ sessionId }: { sessionId: string })
 
         startTransition(async () => {
             try {
-                const res = await fetch(`/api/session/${sessionId}/leaderboard`);
-                if (!res.ok) throw new Error("Failed to fetch");
-                const data = await res.json();
+                const data = await getSessionLeaderboard(sessionId);
                 setStats(data);
             } catch {
                 toast.error("Failed to load session leaderboard.");

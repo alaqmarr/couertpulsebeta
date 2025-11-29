@@ -1,12 +1,8 @@
+"use server";
+
 import { prisma } from "@/lib/db";
-import { NextResponse } from "next/server";
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ sessionId: string }> }
-) {
-  const { sessionId } = await params;
-
+export async function getSessionLeaderboard(sessionId: string) {
   try {
     const session = await prisma.session.findUnique({
       where: { id: sessionId },
@@ -25,7 +21,7 @@ export async function GET(
     });
 
     if (!session) {
-      return NextResponse.json({ error: "Session not found" }, { status: 404 });
+      throw new Error("Session not found");
     }
 
     // Map email to display name
@@ -115,12 +111,61 @@ export async function GET(
       return b.wins - a.wins;
     });
 
-    return NextResponse.json(leaderboard);
+    return leaderboard;
   } catch (error) {
-    console.error("Error fetching leaderboard:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    console.error("Error fetching session leaderboard:", error);
+    throw new Error("Failed to fetch session leaderboard");
+  }
+}
+
+export async function getTeamLeaderboard(teamId: string) {
+  try {
+    const sessions = await prisma.session.findMany({
+      where: { teamId },
+      include: { games: true },
+    });
+
+    const tally = new Map<string, { plays: number; wins: number }>();
+
+    for (const session of sessions) {
+      for (const g of session.games) {
+        const all = [...g.teamAPlayers, ...g.teamBPlayers];
+        for (const p of all) {
+          const rec = tally.get(p) || { plays: 0, wins: 0 };
+          rec.plays += 1;
+          if (
+            (g.winner === "A" && g.teamAPlayers.includes(p)) ||
+            (g.winner === "B" && g.teamBPlayers.includes(p))
+          )
+            rec.wins += 1;
+          tally.set(p, rec);
+        }
+      }
+    }
+
+    const members = await prisma.teamMember.findMany({
+      where: { teamId },
+      include: { user: true },
+    });
+
+    const data = Array.from(tally.entries()).map(([email, val]) => {
+      const member = members.find((m) => m.email === email);
+      const name =
+        member?.displayName || member?.user?.name || email.split("@")[0];
+      const losses = val.plays - val.wins;
+      const winRate = val.plays > 0 ? (val.wins / val.plays) * 100 : 0;
+      return { id: member?.id ?? email, name, ...val, losses, winRate };
+    });
+
+    // Sort: first by win rate (descending), then by name (ascending)
+    const sortedData = data.sort((a, b) => {
+      if (b.winRate !== a.winRate) return b.winRate - a.winRate;
+      return a.name.localeCompare(b.name);
+    });
+
+    return sortedData;
+  } catch (error) {
+    console.error("Error fetching team leaderboard:", error);
+    throw new Error("Failed to fetch team leaderboard");
   }
 }
