@@ -10,6 +10,7 @@
 !.yarn/releases
 !.yarn/versions
 *.txt
+*.log
 
 # testing
 /coverage

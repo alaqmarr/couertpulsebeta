@@ -3,6 +3,8 @@
 import LiveGameCard from "@/components/LiveGameCard";
 import { Eye, Info, Activity } from "lucide-react";
 import { useSessionGames } from "@/hooks/useSessionGames";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getPlayerAvatar } from "@/lib/avatar-utils";
 
 interface SpectatorViewProps {
     teamName: string;
@@ -17,6 +19,7 @@ interface SpectatorViewProps {
                 displayName: string | null;
                 user: {
                     name: string | null;
+                    image: string | null;
                 } | null;
             }[];
         };
@@ -27,6 +30,15 @@ export default function SpectatorView({ teamName, session }: SpectatorViewProps)
     const getPlayerName = (email: string) => {
         const m = session.team.members.find((x) => x.email === email);
         return m?.displayName || m?.user?.name || email.split("@")[0] || "Player";
+    };
+
+    const getMemberAvatar = (email: string) => {
+        const m = session.team.members.find((x) => x.email === email);
+        if (!m) return getPlayerAvatar({ name: "Player" });
+        return getPlayerAvatar({
+            name: m.displayName || m.user?.name || email.split("@")[0],
+            image: m.user?.image // Assuming user has image field from Prisma
+        });
     };
 
     // Dummy confirm function for spectator (should never be called)
@@ -89,6 +101,7 @@ export default function SpectatorView({ teamName, session }: SpectatorViewProps)
                                     game={game}
                                     isOwner={false}
                                     getPlayerName={getPlayerName}
+                                    getMemberAvatar={getMemberAvatar}
                                     onConfirm={async () => { }}
                                     justCreated={false}
                                 />

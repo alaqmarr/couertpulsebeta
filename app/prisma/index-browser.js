@@ -146,11 +146,13 @@ exports.Prisma.UserScalarFieldEnum = {
   name: 'name',
   image: 'image',
   displayName: 'displayName',
+  bio: 'bio',
   createdAt: 'createdAt',
   clerkUserId: 'clerkUserId',
   points: 'points',
   wins: 'wins',
   losses: 'losses',
+  eloRating: 'eloRating',
   packageType: 'packageType',
   teamQuota: 'teamQuota',
   tournamentQuota: 'tournamentQuota',
@@ -251,6 +253,7 @@ exports.Prisma.TournamentScalarFieldEnum = {
   auctionPurse: 'auctionPurse',
   useCustomStats: 'useCustomStats',
   thumbnailUrl: 'thumbnailUrl',
+  galleryImages: 'galleryImages',
   description: 'description',
   rules: 'rules',
   contactPhone: 'contactPhone',
@@ -300,7 +303,19 @@ exports.Prisma.TournamentGameScalarFieldEnum = {
   round: 'round',
   scheduleTime: 'scheduleTime',
   completedAt: 'completedAt',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  currentSet: 'currentSet'
+};
+
+exports.Prisma.MatchEventScalarFieldEnum = {
+  id: 'id',
+  gameId: 'gameId',
+  type: 'type',
+  playerId: 'playerId',
+  timestamp: 'timestamp',
+  scoreA: 'scoreA',
+  scoreB: 'scoreB',
+  metadata: 'metadata'
 };
 
 exports.Prisma.StageScalarFieldEnum = {
@@ -362,6 +377,8 @@ exports.Prisma.TournamentPlayerScalarFieldEnum = {
   soldPrice: 'soldPrice',
   isCaptain: 'isCaptain',
   matchesPlayed: 'matchesPlayed',
+  isCheckedIn: 'isCheckedIn',
+  checkInTime: 'checkInTime',
   customRating: 'customRating',
   customMatches: 'customMatches',
   customWins: 'customWins',
@@ -416,6 +433,11 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
 exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
@@ -424,6 +446,12 @@ exports.Prisma.QueryMode = {
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
 };
 exports.PackageType = exports.$Enums.PackageType = {
   FREE: 'FREE',
@@ -457,6 +485,15 @@ exports.GameStatus = exports.$Enums.GameStatus = {
   SCHEDULED: 'SCHEDULED',
   IN_PROGRESS: 'IN_PROGRESS',
   COMPLETED: 'COMPLETED'
+};
+
+exports.EventType = exports.$Enums.EventType = {
+  POINT_SCORED: 'POINT_SCORED',
+  FAULT: 'FAULT',
+  TIMEOUT: 'TIMEOUT',
+  GAME_START: 'GAME_START',
+  GAME_END: 'GAME_END',
+  UNDO: 'UNDO'
 };
 
 exports.PaymentType = exports.$Enums.PaymentType = {
@@ -502,6 +539,7 @@ exports.Prisma.ModelName = {
   TournamentMember: 'TournamentMember',
   TournamentTeam: 'TournamentTeam',
   TournamentGame: 'TournamentGame',
+  MatchEvent: 'MatchEvent',
   Stage: 'Stage',
   Payment: 'Payment',
   Notification: 'Notification',

@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/db";
+import { adminDb } from "@/lib/firebase-admin";
 import { getOrCreateUser } from "@/lib/clerk";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -317,6 +318,7 @@ export async function updateMatchScoreAction(formData: FormData) {
   const slug = formData.get("slug") as string;
   const matchId = formData.get("matchId") as string;
   const teamId = formData.get("teamId") as string;
+  const playerId = formData.get("playerId") as string;
 
   const tournament = await prisma.tournament.findUnique({
     where: { slug },
@@ -336,6 +338,10 @@ export async function updateMatchScoreAction(formData: FormData) {
 
   const match = await prisma.tournamentGame.findUnique({
     where: { id: matchId },
+    include: {
+      teamA: true,
+      teamB: true,
+    },
   });
   if (!match || match.status === "COMPLETED") throw new Error("Invalid match");
 
@@ -359,89 +365,136 @@ export async function updateMatchScoreAction(formData: FormData) {
     }),
   ]);
 
+  // Sync to Firebase
+  try {
+    const matchRef = adminDb.ref(`matches/${matchId}`);
+    await matchRef.update({
+      teamAScore: isTeamA ? match.teamAScore + 1 : match.teamAScore,
+      teamBScore: !isTeamA ? match.teamBScore + 1 : match.teamBScore,
+      lastUpdate: Date.now(),
+      status: "IN_PROGRESS", // Ensure status is updated if it was SCHEDULED
+    });
+  } catch (error) {
+    console.error("Firebase sync error (score):", error);
+  }
+
   revalidatePath(`/tournament/${slug}/match/${matchId}`);
   revalidatePath(`/tournament/${slug}`);
 }
 
-export async function endMatchAction(formData: FormData) {
+export async function undoMatchScoreAction(formData: FormData) {
   const user = await getOrCreateUser();
   if (!user) throw new Error("Unauthorized");
 
+  const slug = formData.get("slug") as string;
   const matchId = formData.get("matchId") as string;
 
-  const match = await prisma.tournamentGame.findUnique({
-    where: { id: matchId },
-    include: { tournament: { include: { members: true } } },
+  const tournament = await prisma.tournament.findUnique({
+    where: { slug },
+    include: { members: true },
   });
 
-  if (!match) throw new Error("Match not found");
+  if (!tournament) throw new Error("Tournament not found");
 
   // Check permissions
-  const isManager = match.tournament.members.some(
+  const isManager = tournament.members.some(
     (m) =>
       m.userId === user.id && (m.role === "MANAGER" || m.role === "REFEREE")
   );
-  if (match.tournament.ownerId !== user.id && !isManager) {
+  if (tournament.ownerId !== user.id && !isManager) {
     throw new Error("Permission denied");
   }
 
-  const teamAScore = match.teamAScore;
-  const teamBScore = match.teamBScore;
+  const match = await prisma.tournamentGame.findUnique({
+    where: { id: matchId },
+  });
+  if (!match || match.status === "COMPLETED") throw new Error("Invalid match");
 
-  let winningTeam: WinningTeam = WinningTeam.DRAW;
-  if (teamAScore > teamBScore) winningTeam = WinningTeam.A;
-  else if (teamBScore > teamAScore) winningTeam = WinningTeam.B;
+  // Find last point event
+  const lastEvent = await prisma.matchEvent.findFirst({
+    where: {
+      gameId: matchId,
+      type: "POINT_SCORED",
+    },
+    orderBy: { timestamp: "desc" },
+  });
+
+  if (!lastEvent) throw new Error("No points to undo");
+
+  // Determine which team scored
+  // We can infer from score change or metadata.
+  // Metadata: { teamId, teamName }
+  const metadata = lastEvent.metadata as any;
+  const teamId = metadata?.teamId;
+
+  if (!teamId) throw new Error("Cannot determine team from last event");
+
+  const isTeamA = match.teamAId === teamId;
 
   await prisma.$transaction([
-    // Update Match
+    // Revert Game Score
     prisma.tournamentGame.update({
       where: { id: matchId },
       data: {
-        status: "COMPLETED",
-        completedAt: new Date(),
-        winningTeam,
+        teamAScore: isTeamA ? { decrement: 1 } : undefined,
+        teamBScore: !isTeamA ? { decrement: 1 } : undefined,
       },
     }),
-    // Update Team A Stats
-    prisma.tournamentTeam.update({
-      where: { id: match.teamAId },
-      data: {
-        matchesPlayed: { increment: 1 },
-        wins: winningTeam === WinningTeam.A ? { increment: 1 } : undefined,
-        losses: winningTeam === WinningTeam.B ? { increment: 1 } : undefined,
-        draws: winningTeam === WinningTeam.DRAW ? { increment: 1 } : undefined,
-        points: {
-          increment:
-            winningTeam === WinningTeam.A
-              ? 3
-              : winningTeam === WinningTeam.DRAW
-              ? 1
-              : 0,
-        },
-      },
-    }),
-    // Update Team B Stats
-    prisma.tournamentTeam.update({
-      where: { id: match.teamBId },
-      data: {
-        matchesPlayed: { increment: 1 },
-        wins: winningTeam === WinningTeam.B ? { increment: 1 } : undefined,
-        losses: winningTeam === WinningTeam.A ? { increment: 1 } : undefined,
-        draws: winningTeam === WinningTeam.DRAW ? { increment: 1 } : undefined,
-        points: {
-          increment:
-            winningTeam === WinningTeam.B
-              ? 3
-              : winningTeam === WinningTeam.DRAW
-              ? 1
-              : 0,
-        },
-      },
-    }),
+    // Delete the event (or mark as undone? Deleting is cleaner for score calculation, but keeping history is better.
+    // Let's keep history by adding an UNDO event and maybe marking the original event as reverted if we had a flag.
+    // But for now, we just add an UNDO event and decrement score.
+    // Wait, if we just decrement score, the event history still shows the point.
+    // The timeline will show: Point -> Undo. This is fine.
+
+    // Also need to remove the TournamentPoint record to keep stats accurate.
+    // We need to find the latest point for this game and team.
+    // Since we don't have a direct link between MatchEvent and TournamentPoint, we find the latest one.
   ]);
 
-  revalidatePath(`/tournament/${match.tournament.slug}/match/${matchId}`);
-  revalidatePath(`/tournament/${match.tournament.slug}`);
+  // Separate transaction or part of same?
+  // We need to find the point to delete.
+  const lastPoint = await prisma.tournamentPoint.findFirst({
+    where: {
+      gameId: matchId,
+      tournamentTeamId: teamId,
+      pointType: "SCORE",
+    },
+    orderBy: { timestamp: "desc" },
+  });
+
+  if (lastPoint) {
+    await prisma.tournamentPoint.delete({
+      where: { id: lastPoint.id },
+    });
+  }
+
+  // Record Undo Event
+  await prisma.matchEvent.create({
+    data: {
+      gameId: matchId,
+      type: "UNDO",
+      scoreA: isTeamA ? match.teamAScore - 1 : match.teamAScore,
+      scoreB: !isTeamA ? match.teamBScore - 1 : match.teamBScore,
+      metadata: {
+        revertedEventId: lastEvent.id,
+      },
+    },
+  });
+
+  // Sync to Firebase
+  try {
+    const matchRef = adminDb.ref(`matches/${matchId}`);
+    await matchRef.update({
+      teamAScore: isTeamA ? match.teamAScore - 1 : match.teamAScore,
+      teamBScore: !isTeamA ? match.teamBScore - 1 : match.teamBScore,
+      lastUpdate: Date.now(),
+    });
+  } catch (error) {
+    console.error("Firebase sync error (undo):", error);
+  }
+
+  revalidatePath(`/tournament/${slug}/match/${matchId}`);
+  revalidatePath(`/tournament/${slug}`);
 }
 
 export async function createTournamentTeamAction(formData: FormData) {
@@ -969,4 +1022,107 @@ export async function bulkRejectEnrollmentsAction(formData: FormData) {
   }
 
   revalidatePath(`/tournament/${slug}/enrollments`);
+}
+
+export async function endMatchAction(formData: FormData) {
+  const user = await getOrCreateUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const matchId = formData.get("matchId") as string;
+
+  const match = await prisma.tournamentGame.findUnique({
+    where: { id: matchId },
+    include: { tournament: { include: { members: true } } },
+  });
+
+  if (!match) throw new Error("Match not found");
+
+  // Check permissions
+  const isManager = match.tournament.members.some(
+    (m) =>
+      m.userId === user.id && (m.role === "MANAGER" || m.role === "REFEREE")
+  );
+  if (match.tournament.ownerId !== user.id && !isManager) {
+    throw new Error("Permission denied");
+  }
+
+  const teamAScore = match.teamAScore;
+  const teamBScore = match.teamBScore;
+
+  let winningTeam: WinningTeam = WinningTeam.DRAW;
+  if (teamAScore > teamBScore) winningTeam = WinningTeam.A;
+  else if (teamBScore > teamAScore) winningTeam = WinningTeam.B;
+
+  const completedAt = new Date();
+
+  await prisma.$transaction([
+    // Update Match
+    prisma.tournamentGame.update({
+      where: { id: matchId },
+      data: {
+        status: "COMPLETED",
+        completedAt,
+        winningTeam,
+      },
+    }),
+    // Update Team A Stats
+    prisma.tournamentTeam.update({
+      where: { id: match.teamAId },
+      data: {
+        matchesPlayed: { increment: 1 },
+        wins: winningTeam === WinningTeam.A ? { increment: 1 } : undefined,
+        losses: winningTeam === WinningTeam.B ? { increment: 1 } : undefined,
+        draws: winningTeam === WinningTeam.DRAW ? { increment: 1 } : undefined,
+        points: {
+          increment:
+            winningTeam === WinningTeam.A
+              ? 3
+              : winningTeam === WinningTeam.DRAW
+              ? 1
+              : 0,
+        },
+      },
+    }),
+    // Update Team B Stats
+    prisma.tournamentTeam.update({
+      where: { id: match.teamBId },
+      data: {
+        matchesPlayed: { increment: 1 },
+        wins: winningTeam === WinningTeam.B ? { increment: 1 } : undefined,
+        losses: winningTeam === WinningTeam.A ? { increment: 1 } : undefined,
+        draws: winningTeam === WinningTeam.DRAW ? { increment: 1 } : undefined,
+        points: {
+          increment:
+            winningTeam === WinningTeam.B
+              ? 3
+              : winningTeam === WinningTeam.DRAW
+              ? 1
+              : 0,
+        },
+      },
+    }),
+    // Record Game End Event
+    prisma.matchEvent.create({
+      data: {
+        gameId: matchId,
+        type: "GAME_END",
+        scoreA: match.teamAScore,
+        scoreB: match.teamBScore,
+      },
+    }),
+  ]);
+
+  // Sync to Firebase
+  try {
+    const matchRef = adminDb.ref(`matches/${matchId}`);
+    await matchRef.update({
+      status: "COMPLETED",
+      completedAt: completedAt.toISOString(),
+      lastUpdate: Date.now(),
+    });
+  } catch (error) {
+    console.error("Firebase sync error (end):", error);
+  }
+
+  revalidatePath(`/tournament/${match.tournament.slug}/match/${matchId}`);
 }

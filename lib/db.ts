@@ -1,5 +1,6 @@
 // lib/db.ts
 import { PrismaClient } from "../app/prisma";
+export * from "../app/prisma";
 
 declare global {
   // Prevents hot-reload multiple instances in dev

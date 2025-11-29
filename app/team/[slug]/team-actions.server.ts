@@ -3,6 +3,8 @@
 import { prisma } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/clerk";
 import { revalidatePath } from "next/cache";
+import { sendEmail } from "@/lib/email";
+import { EmailTemplates } from "@/lib/email-templates";
 
 /* =========================================================
    ADD TEAM MEMBER
@@ -53,6 +55,24 @@ export async function addMemberAction(
       role: "MEMBER",
     },
   });
+
+  // Send Invitation Email
+  try {
+    const html = EmailTemplates.TeamInvitation(
+      name || email.split("@")[0],
+      team.name,
+      currentUser.name || "A Team Owner",
+      team.slug
+    );
+
+    await sendEmail({
+      to: email,
+      subject: `Invitation to join ${team.name}`,
+      html,
+    });
+  } catch (err) {
+    console.error("Failed to send invitation email:", err);
+  }
 
   revalidatePath(`/team/${slug}`);
 }

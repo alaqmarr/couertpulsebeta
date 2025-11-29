@@ -1,4 +1,10 @@
-import { Tournament, TournamentTeam } from "@/app/prisma";
+import { TournamentTeam } from "@/app/prisma";
+import { sendEmail } from "@/lib/email";
+import {
+  getPendingEmails,
+  markEmailSent,
+  markEmailFailed,
+} from "@/lib/email-queue";
 
 interface Match {
   homeTeamId: string;
@@ -44,4 +50,34 @@ export function generateRoundRobinSchedule(teams: TournamentTeam[]): Match[] {
   }
 
   return schedule;
+}
+
+export async function processEmailQueue() {
+  const pendingEmails = await getPendingEmails(20); // Process 20 at a time
+
+  if (pendingEmails.length === 0) {
+    return { processed: 0, errors: 0 };
+  }
+
+  let processed = 0;
+  let errors = 0;
+
+  for (const email of pendingEmails) {
+    const result = await sendEmail({
+      to: email.recipient,
+      subject: email.subject,
+      text: email.body,
+    });
+
+    if (result.success) {
+      await markEmailSent(email.id);
+      processed++;
+    } else {
+      console.error(`Failed to send email ${email.id}:`, result.error);
+      await markEmailFailed(email.id, result.error || "Unknown error");
+      errors++;
+    }
+  }
+
+  return { processed, errors };
 }

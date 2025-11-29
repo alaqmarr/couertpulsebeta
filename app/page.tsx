@@ -14,7 +14,8 @@ import CreateEntityDialog from "@/components/CreateEntityDialog";
 import UserStats, { UserStatsSkeleton } from "@/components/dashboard/UserStats";
 import TeamList, { TeamListSkeleton } from "@/components/dashboard/TeamList";
 import TournamentList, { TournamentListSkeleton } from "@/components/dashboard/TournamentList";
-import { UpcomingSession, PlayerIntel, DataFreshness, SidebarSkeleton } from "@/components/dashboard/SidebarComponents";
+import { UpcomingSession, PlayerIntel, DataFreshness } from "@/components/dashboard/SidebarComponents";
+import { LoadingState } from "@/components/ui/loading-state";
 
 // We'll keep these for now or refactor them later
 // import { UpcomingSessionCard } from "@/components/dashboard/UpcomingSessionCard";
@@ -53,29 +54,33 @@ export default async function DashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* --- "SIDEBAR" (Shows first on mobile) --- */}
             <div className="lg:col-span-1 space-y-8 lg:order-2">
-              <Suspense fallback={<SidebarSkeleton />}>
-                <div className="space-y-8">
-                  <UpcomingSession />
-                  <PlayerIntel />
-                  <DataFreshness />
-                </div>
+              <Suspense fallback={<LoadingState title="Loading Session..." message="Fetching upcoming session details" />}>
+                <UpcomingSession />
+              </Suspense>
+
+              <Suspense fallback={<LoadingState title="Loading Intel..." message="Analyzing player data" />}>
+                <PlayerIntel />
+              </Suspense>
+
+              <Suspense fallback={<LoadingState title="Checking Data..." message="Verifying data freshness" />}>
+                <DataFreshness />
               </Suspense>
             </div>
 
             {/* --- MAIN CONTENT (Shows second on mobile) --- */}
             <div className="lg:col-span-2 space-y-8 lg:order-1">
               {/* USER STATS (BENTO GRID) */}
-              <Suspense fallback={<UserStatsSkeleton />}>
+              <Suspense fallback={<LoadingState title="Loading Stats..." message="Crunching your performance numbers" />}>
                 <UserStats />
               </Suspense>
 
               {/* TEAM CARDS */}
-              <Suspense fallback={<TeamListSkeleton />}>
+              <Suspense fallback={<LoadingState title="Loading Teams..." message="Fetching your squads" />}>
                 <TeamList />
               </Suspense>
 
               {/* TOURNAMENTS */}
-              <Suspense fallback={<TournamentListSkeleton />}>
+              <Suspense fallback={<LoadingState title="Loading Tournaments..." message="Retrieving tournament history" />}>
                 <TournamentList />
               </Suspense>
             </div>

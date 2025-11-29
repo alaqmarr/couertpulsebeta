@@ -1,7 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/db";
-import { adminDb } from "@/lib/firebase-admin";
+import { primaryDatabase } from "@/lib/firebase-admin";
 import { getOrCreateUser } from "@/lib/clerk";
 import { revalidatePath } from "next/cache";
 
@@ -70,8 +70,10 @@ export async function placeBidAction(formData: FormData) {
     });
 
     // 2. FIREBASE: Broadcast Update
-    if (adminDb) {
-      const auctionRef = adminDb.ref(`auctions/${tournamentId}/activeItem`);
+    if (primaryDatabase) {
+      const auctionRef = primaryDatabase.ref(
+        `auctions/${tournamentId}/activeItem`
+      );
       await auctionRef.update({
         currentBid: amount,
         currentBidderId: teamId,
@@ -121,8 +123,8 @@ export async function markPlayerSoldAction(formData: FormData) {
     });
 
     // 2. FIREBASE: Clear Active Item or Update Status
-    if (adminDb) {
-      const auctionRef = adminDb.ref(`auctions/${tournamentId}`);
+    if (primaryDatabase) {
+      const auctionRef = primaryDatabase.ref(`auctions/${tournamentId}`);
       await auctionRef.child("activeItem").set(null); // Clear active item
       // Optionally push to a "recentSales" list in Firebase for UI animation
       await auctionRef.child("recentSales").push({

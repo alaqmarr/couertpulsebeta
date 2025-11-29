@@ -40,12 +40,27 @@ export default async function TournamentLayout({
     const userRole = tournament.members[0]?.role;
     const isManager = userRole === "MANAGER" || tournament.ownerId === user.id;
 
+    // Fetch user's team if they are a player or owner
+    const teamMember = await prisma.tournamentPlayer.findFirst({
+        where: {
+            tournamentId: tournament.id,
+            userId: user.id
+        },
+        select: { teamId: true }
+    });
+
+    // Also check if they are a team owner (if we had ownerId on Team, but we rely on TournamentMember role usually)
+    // For now, let's rely on the Player record linking to the User.
+    // If we want to support non-playing owners having a "My Team" link, we'd need to check TournamentMember or Team metadata.
+    // Assuming for now that "My Team" is primarily for Players.
+
     return (
         <div className="min-h-screen bg-background flex flex-col md:flex-row">
             <TournamentSidebar
                 slug={slug}
                 tournamentName={tournament.name}
                 isManager={isManager}
+                teamId={teamMember?.teamId || undefined}
             />
 
             {/* Main Content */}

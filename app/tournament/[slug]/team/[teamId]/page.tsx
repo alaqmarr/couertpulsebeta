@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Shield, Users, Trophy, Coins } from "lucide-react";
 import { Prisma, TournamentTeam, TournamentPlayer, Tournament } from "@/app/prisma";
+import { PlayerLink } from "@/components/tournament/PlayerLink";
 
 type TeamWithDetails = TournamentTeam & {
     players: TournamentPlayer[];
@@ -94,7 +95,9 @@ export default async function TeamDashboardPage({
                                     <AvatarFallback>{player.name.substring(0, 2).toUpperCase()}</AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <p className="font-bold">{player.name}</p>
+                                    <p className="font-bold">
+                                        <PlayerLink player={player} />
+                                    </p>
                                     {player.soldPrice && (
                                         <Badge variant="secondary" className="mt-1 text-[10px] h-5">
                                             Sold: {player.soldPrice}

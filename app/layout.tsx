@@ -3,7 +3,7 @@ import { AdminActivationBanner } from "@/components/admin/AdminActivationBanner"
 import { getOrCreateUser } from "@/lib/clerk";
 import MainHeader from "@/components/layout/MainHeader";
 import MainFooter from "@/components/layout/MainFooter";
-import { DockDemo } from "@/components/Dock";
+import { AppSidebar } from "@/components/layout/AppSidebar";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
 import { Outfit } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
@@ -41,26 +41,27 @@ export default async function RootLayout({
         <GoogleAnalytics gaId="G-2WPNMVD1D5" />
         <ClerkProvider>
           {/* Wrapper for sticky footer layout */}
-          <div className="flex flex-col min-h-screen">
+          <div className="flex h-screen overflow-hidden">
+            {/* Sidebar */}
+            {user && <AppSidebar showAdmin={isAdmin && isActivated} />}
 
-            {showAdminBanner && user?.email && (
-              <AdminActivationBanner email={user.email} />
-            )}
+            {/* Main Content Area */}
+            <div className="flex flex-col flex-1 overflow-y-auto relative">
+              {showAdminBanner && user?.email && (
+                <AdminActivationBanner email={user.email} />
+              )}
 
-            {/* --- Main Header --- */}
-            <MainHeader />
+              {/* --- Main Header --- */}
+              <MainHeader />
 
-            {/* --- Main Page Content --- */}
-            <main className="flex-grow">
-              {children}
-            </main>
-            {/* App-wide UI (like the dock) */}
-            {user && (
-              <DockDemo />
-            )}
-            {/* --- Main Footer --- */}
-            <MainFooter />
+              {/* --- Main Page Content --- */}
+              <main className="flex-grow">
+                {children}
+              </main>
 
+              {/* --- Main Footer --- */}
+              <MainFooter />
+            </div>
           </div>
 
           {/* Styled Toaster for glass effect */}

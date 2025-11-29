@@ -6,6 +6,7 @@ import { Loader2, Minus, Plus, Trophy, UserCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import GameDetailsModal from "./GameDetailsModal";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface LiveGameCardProps {
     game: {
@@ -20,6 +21,7 @@ interface LiveGameCardProps {
     };
     isOwner: boolean;
     getPlayerName: (email: string) => string;
+    getMemberAvatar?: (email: string) => string; // Optional for now to avoid breaking other usages
     onConfirm: (slug: string, scoreA: number, scoreB: number) => Promise<void>;
     justCreated?: boolean;
 }
@@ -28,6 +30,7 @@ export default function LiveGameCard({
     game,
     isOwner,
     getPlayerName,
+    getMemberAvatar,
     onConfirm,
     justCreated,
 }: LiveGameCardProps) {
@@ -118,9 +121,17 @@ export default function LiveGameCard({
                             }`}
                     >
                         {game.teamAPlayers.map((p) => (
-                            <span key={p} className="uppercase truncate">
-                                {getPlayerName(p)}
-                            </span>
+                            <div key={p} className="flex items-center gap-2 justify-end">
+                                <span className="uppercase truncate text-sm">
+                                    {getPlayerName(p)}
+                                </span>
+                                {getMemberAvatar && (
+                                    <Avatar className="h-6 w-6">
+                                        <AvatarImage src={getMemberAvatar(p)} />
+                                        <AvatarFallback>{getPlayerName(p).substring(0, 2).toUpperCase()}</AvatarFallback>
+                                    </Avatar>
+                                )}
+                            </div>
                         ))}
                         {/* Score Controls A */}
                         {!game.winner && isOwner && (
@@ -172,9 +183,17 @@ export default function LiveGameCard({
                             }`}
                     >
                         {game.teamBPlayers.map((p) => (
-                            <span key={p} className="uppercase truncate">
-                                {getPlayerName(p)}
-                            </span>
+                            <div key={p} className="flex items-center gap-2 justify-start">
+                                {getMemberAvatar && (
+                                    <Avatar className="h-6 w-6">
+                                        <AvatarImage src={getMemberAvatar(p)} />
+                                        <AvatarFallback>{getPlayerName(p).substring(0, 2).toUpperCase()}</AvatarFallback>
+                                    </Avatar>
+                                )}
+                                <span className="uppercase truncate text-sm">
+                                    {getPlayerName(p)}
+                                </span>
+                            </div>
                         ))}
                         {/* Score Controls B */}
                         {!game.winner && isOwner && (

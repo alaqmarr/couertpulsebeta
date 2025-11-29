@@ -1,16 +1,16 @@
 import "server-only";
-import { adminDb } from "@/lib/firebase-admin";
+import { primaryDatabase } from "@/lib/firebase-admin";
 import { prisma } from "@/lib/db";
 
 export async function syncSessionData(sessionId: string) {
-  if (!adminDb) {
+  if (!primaryDatabase) {
     console.error("Firebase Admin not initialized");
     return { success: false, error: "Firebase Admin not initialized" };
   }
 
   try {
     // 1. Fetch data from Firebase
-    const sessionRef = adminDb.ref(`sessions/${sessionId}`);
+    const sessionRef = primaryDatabase.ref(`sessions/${sessionId}`);
     const snapshot = await sessionRef.once("value");
     const data = snapshot.val();
 

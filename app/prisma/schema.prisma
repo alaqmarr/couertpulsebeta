@@ -114,6 +114,7 @@ model User {
   name        String?
   image       String?
   displayName String?
+  bio         String?  @db.Text
   createdAt   DateTime @default(now())
 
   // Optional 1:1 link to ClerkUser
@@ -121,9 +122,10 @@ model User {
   clerkUser   ClerkUser? @relation(fields: [clerkUserId], references: [id])
 
   // Player stats
-  points Int @default(0)
-  wins   Int @default(0)
-  losses Int @default(0)
+  points    Int @default(0)
+  wins      Int @default(0)
+  losses    Int @default(0)
+  eloRating Int @default(1200)
 
   // Package and usage
   packageType     PackageType @default(FREE)
@@ -306,6 +308,7 @@ model Tournament {
   auctionPurse      Int       @default(10000)
   useCustomStats    Boolean   @default(false)
   thumbnailUrl      String?
+  galleryImages     String[]
 
   // Setup Details
   description       String? @db.Text
@@ -395,10 +398,15 @@ model TournamentGame {
   completedAt  DateTime?
   createdAt    DateTime     @default(now())
 
-  tournament       Tournament        @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-  stage            Stage?            @relation(fields: [stageId], references: [id], onDelete: SetNull)
-  teamA            TournamentTeam    @relation("TeamARef", fields: [teamAId], references: [id], onDelete: Restrict)
-  teamB            TournamentTeam    @relation("TeamBRef", fields: [teamBId], references: [id], onDelete: Restrict)
+  tournament Tournament     @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  stage      Stage?         @relation(fields: [stageId], references: [id], onDelete: SetNull)
+  teamA      TournamentTeam @relation("TeamARef", fields: [teamAId], references: [id], onDelete: Restrict)
+  teamB      TournamentTeam @relation("TeamBRef", fields: [teamBId], references: [id], onDelete: Restrict)
+  // Game State
+  currentSet Int            @default(1)
+
+  // Relations
+  events           MatchEvent[]
   tournamentPoints TournamentPoint[]
 
   @@index([tournamentId])
@@ -408,6 +416,31 @@ model TournamentGame {
   @@index([scheduleTime])
   @@index([completedAt])
   @@index([status])
+}
+
+model MatchEvent {
+  id        String            @id @default(cuid())
+  gameId    String
+  game      TournamentGame    @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  type      EventType
+  playerId  String?
+  player    TournamentPlayer? @relation(fields: [playerId], references: [id])
+  timestamp DateTime          @default(now())
+  scoreA    Int
+  scoreB    Int
+  metadata  Json?
+
+  @@index([gameId])
+  @@index([playerId])
+}
+
+enum EventType {
+  POINT_SCORED
+  FAULT
+  TIMEOUT
+  GAME_START
+  GAME_END
+  UNDO
 }
 
 model Stage {
@@ -508,15 +541,18 @@ model CalendarEvent {
  */
 
 model TournamentPlayer {
-  id            String  @id @default(cuid())
+  id            String       @id @default(cuid())
   tournamentId  String
   teamId        String?
   userId        String?
   name          String
   email         String?
-  soldPrice     Int     @default(0)
-  isCaptain     Boolean @default(false)
-  matchesPlayed Int     @default(0)
+  soldPrice     Int          @default(0)
+  isCaptain     Boolean      @default(false)
+  matchesPlayed Int          @default(0)
+  isCheckedIn   Boolean      @default(false)
+  checkInTime   DateTime?
+  events        MatchEvent[]
 
   // Custom Stats (Tournament Specific)
   customRating  Int? @default(0)

@@ -13,7 +13,10 @@ import {
     LayoutDashboard,
     Link as LinkIcon,
     Menu,
-    ClipboardList
+    ClipboardList,
+    BarChart3,
+    Eye,
+    Image as ImageIcon
 } from "lucide-react";
 import { useState } from "react";
 
@@ -21,9 +24,10 @@ interface TournamentSidebarProps {
     slug: string;
     tournamentName: string;
     isManager: boolean;
+    teamId?: string;
 }
 
-export function TournamentSidebar({ slug, tournamentName, isManager }: TournamentSidebarProps) {
+export function TournamentSidebar({ slug, tournamentName, isManager, teamId }: TournamentSidebarProps) {
     const pathname = usePathname();
     const [open, setOpen] = useState(false);
 
@@ -38,6 +42,18 @@ export function TournamentSidebar({ slug, tournamentName, isManager }: Tournamen
             href: `/tournament/${slug}/enrollments`,
             label: "Enrollments",
             icon: ClipboardList,
+            exact: false
+        },
+        {
+            href: `/tournament/${slug}/analytics`,
+            label: "Analytics",
+            icon: BarChart3,
+            exact: false
+        },
+        {
+            href: `/tournament/${slug}#standings`,
+            label: "Standings",
+            icon: Trophy,
             exact: false
         },
         {
@@ -66,12 +82,23 @@ export function TournamentSidebar({ slug, tournamentName, isManager }: Tournamen
         },
     ];
 
-    // TODO: We need to know the user's team ID to link to it.
-    // For now, I'll add a placeholder or fetch it. 
-    // Since this is a client component, we might need to pass the teamId as a prop.
-    // Let's update the props interface first.
+    if (teamId) {
+        links.push({
+            href: `/tournament/${slug}/team/${teamId}`,
+            label: "My Team",
+            icon: Trophy,
+            exact: false
+        });
+    }
 
     if (isManager) {
+        links.push({
+            href: `/tournament/${slug}/check-in`,
+            label: "Check-in",
+            icon: ClipboardList,
+            exact: false
+        });
+
         links.push({
             href: `/tournament/${slug}/settings`,
             label: "Settings",
@@ -79,6 +106,21 @@ export function TournamentSidebar({ slug, tournamentName, isManager }: Tournamen
             exact: false
         });
     }
+
+    // Add Public Links
+    links.push({
+        href: `/tournament/${slug}/gallery`,
+        label: "Gallery",
+        icon: ImageIcon,
+        exact: false
+    });
+
+    links.push({
+        href: `/tournament/${slug}/spectate`,
+        label: "Spectate",
+        icon: Eye,
+        exact: false
+    });
 
     const NavContent = () => (
         <nav className="space-y-1">

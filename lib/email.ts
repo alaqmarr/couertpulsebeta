@@ -1,36 +1,34 @@
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: process.env.SMTP_HOST,
+  port: parseInt(process.env.SMTP_PORT || "587"),
+  secure: process.env.SMTP_SECURE === "true",
   auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
   },
 });
 
-interface EmailOptions {
+interface SendEmailOptions {
   to: string;
   subject: string;
-  html: string;
+  text?: string;
+  html?: string;
 }
 
-export async function sendEmail({ to, subject, html }: EmailOptions) {
-  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
-    console.warn("GMAIL_USER or GMAIL_APP_PASSWORD not set. Email not sent.");
-    return { success: false, error: "Missing credentials" };
-  }
-
+export async function sendEmail({ to, subject, text, html }: SendEmailOptions) {
   try {
     const info = await transporter.sendMail({
-      from: `"CourtPulse" <${process.env.GMAIL_USER}>`,
+      from: process.env.SMTP_FROM || '"CouertPulse" <noreply@couertpulse.com>',
       to,
       subject,
+      text,
       html,
     });
-    console.log("Email sent: %s", info.messageId);
     return { success: true, messageId: info.messageId };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error sending email:", error);
-    return { success: false, error };
+    return { success: false, error: error.message };
   }
 }

@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { adminDb } from "@/lib/firebase-admin";
+import { primaryDatabase } from "@/lib/firebase-admin";
 import { getOrCreateUser } from "@/lib/clerk";
 
 /* =========================================================
@@ -117,8 +117,8 @@ export async function submitGameScoreAction(
   });
 
   // --- FIREBASE SYNC ---
-  if (adminDb) {
-    await adminDb.ref(`sessions/${sessionId}/games/${game.id}`).update({
+  if (primaryDatabase) {
+    await primaryDatabase.ref(`sessions/${sessionId}/games/${game.id}`).update({
       teamAScore,
       teamBScore,
       winner,
@@ -179,17 +179,19 @@ export async function createGameAction(
   });
 
   // --- FIREBASE SYNC ---
-  if (adminDb) {
-    await adminDb.ref(`sessions/${session.id}/games/${newGame.id}`).set({
-      id: newGame.id,
-      slug: newGame.slug,
-      sessionId: session.id, // Added sessionId
-      teamAPlayers: newGame.teamAPlayers,
-      teamBPlayers: newGame.teamBPlayers,
-      teamAScore: 0,
-      teamBScore: 0,
-      winner: null,
-    });
+  if (primaryDatabase) {
+    await primaryDatabase
+      .ref(`sessions/${session.id}/games/${newGame.id}`)
+      .set({
+        id: newGame.id,
+        slug: newGame.slug,
+        sessionId: session.id, // Added sessionId
+        teamAPlayers: newGame.teamAPlayers,
+        teamBPlayers: newGame.teamBPlayers,
+        teamAScore: 0,
+        teamBScore: 0,
+        winner: null,
+      });
   }
   // ---------------------
 
@@ -303,8 +305,8 @@ export async function randomizeTeamsAction(
   // ------------------------------------
 
   // Save to Firebase for instant UI update
-  if (adminDb) {
-    await adminDb.ref(`sessions/${session.id}/generatedTeams`).set({
+  if (primaryDatabase) {
+    await primaryDatabase.ref(`sessions/${session.id}/generatedTeams`).set({
       teamA,
       teamB,
       matchType,

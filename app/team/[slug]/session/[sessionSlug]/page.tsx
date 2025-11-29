@@ -1,18 +1,14 @@
 import { prisma } from "@/lib/db";
 import { getOrCreateUser } from "@/lib/clerk";
 import { redirect, notFound } from "next/navigation";
-import { adminDb } from "@/lib/firebase-admin";
-import { CalendarDays, ChevronLeft, Calendar } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { Calendar } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Suspense } from "react";
 import { LoadingCard } from "@/components/LoadingCard";
-import ManageGames from "./components/ManageGames";
 import SessionLeaderboard from "./components/SessionLeaderboard";
 import { SyncStatus } from "@/components/SyncStatus";
 import { Badge } from "@/components/ui/badge";
-import { hasCapability } from "@/lib/permissions";
+import { SessionGamesWrapper } from "./components/SessionGamesWrapper";
 
 export const revalidate = 0;
 export const dynamic = "force-dynamic";
@@ -26,39 +22,18 @@ export default async function SessionPage({
   const user = await getOrCreateUser();
   if (!user) redirect("/sign-in");
 
+  // Minimal fetch for header
   const session = await prisma.session.findUnique({
     where: { slug: sessionSlug },
-    include: {
-      team: {
-        include: {
-          members: {
-            include: {
-              user: true,
-            },
-            orderBy: { joinedAt: "asc" },
-          },
-        },
-      },
-      participants: {
-        include: {
-          member: {
-            include: {
-              user: true,
-            },
-          },
-        },
-      },
-      games: true,
-    },
+    select: {
+      id: true,
+      name: true,
+      date: true,
+      games: { select: { id: true } } // Just to count games
+    }
   });
 
   if (!session) notFound();
-
-  console.log(`[SessionPage] Loaded session ${session.id} with ${session.games.length} games.`);
-
-  const team = session.team;
-  const isOwner = team.ownerId === user.id;
-  const canSync = hasCapability(user, "canSync");
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-background via-muted/50 to-background text-foreground p-4 md:p-6 lg:p-8">
@@ -96,38 +71,7 @@ export default async function SessionPage({
             {/* ---------------- GAME MANAGEMENT ---------------- */}
             <section className="w-full">
               <Suspense fallback={<LoadingCard title="Loading Games..." />}>
-                <ManageGames
-                  session={{
-                    id: session.id,
-                    slug: session.slug,
-                    games: session.games.map((g) => ({
-                      id: g.id,
-                      slug: g.slug,
-                      sessionId: g.sessionId,
-                      teamAPlayers: g.teamAPlayers,
-                      teamBPlayers: g.teamBPlayers,
-                      teamAScore: g.teamAScore || 0,
-                      teamBScore: g.teamBScore || 0,
-                      winner: g.winner,
-                    })),
-                    team: {
-                      members: session.team.members.map((m) => ({
-                        id: m.id,
-                        email: m.email,
-                        displayName: m.displayName,
-                        user: { name: m.user?.name ?? null },
-                      })),
-                    },
-                    participants: session.participants.map((p) => ({
-                      memberId: p.memberId,
-                      isSelected: p.isSelected,
-                    })),
-                  }}
-                  teamSlug={slug}
-                  sessionSlug={sessionSlug}
-                  isOwner={isOwner}
-                  canSync={canSync}
-                />
+                <SessionGamesWrapper sessionSlug={sessionSlug} teamSlug={slug} />
               </Suspense>
             </section>
           </div>

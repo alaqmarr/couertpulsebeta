@@ -1,4 +1,4 @@
-import { Calendar, Home, Inbox, LogInIcon, Package2Icon, Search, Settings, UserPlus2Icon } from "lucide-react"
+import { Calendar, Home, Inbox, LogInIcon, Package2Icon, Search, Settings, UserPlus2Icon, Trophy, Activity, Server } from "lucide-react"
 
 import {
     Sidebar,
@@ -19,8 +19,11 @@ const publicItems = [
 
 const loginItems = [
     { title: "Home", icon: Home, url: "/" },
+    { title: "Achievements", icon: Trophy, url: "/achievements" },
+    { title: "Trophy Room", icon: Activity, url: "/trophy-room" },
     { title: "Settings", icon: Settings, url: "/settings" },
     { title: "Packages", icon: Package2Icon, url: "/packages" },
+    { title: "System Status", icon: Server, url: "/system/status" },
 ]
 
 
