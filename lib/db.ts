@@ -1,4 +1,4 @@
-import { PrismaClient } from "../app/prisma";
+import { PrismaClient } from "@/app/prisma";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 const adapter = new PrismaPg({
@@ -55,7 +55,7 @@ export type {
   TournamentEnrollment,
   EmailLog,
   VerificationToken,
-} from "../app/prisma";
+} from "@/app/prisma";
 
 // Export enums
 export {
@@ -69,4 +69,4 @@ export {
   EventType,
   EnrollmentStatus,
   PaymentMode,
-} from "../app/prisma";
+} from "@/app/prisma";
