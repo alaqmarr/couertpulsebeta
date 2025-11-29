@@ -1,6 +1,6 @@
 import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient as AnalyticsPrismaClient } from "@/app/prisma-analytics";
+import { PrismaClient as AnalyticsPrismaClient } from "../app/prisma-analytics";
 
 const connectionString = `${process.env.ANALYTICS_DATABASE_URL}`;
 
