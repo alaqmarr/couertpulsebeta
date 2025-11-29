@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { sendEmail } from "@/lib/email";
 import { EmailTemplates } from "@/lib/email-templates";
-import { WinningTeam } from "@/app/prisma";
+import { WinningTeam } from "@/lib/db";
 
 const createTournamentSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),

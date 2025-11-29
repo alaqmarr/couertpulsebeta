@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Shield, Users, Trophy, Coins } from "lucide-react";
-import { Prisma, TournamentTeam, TournamentPlayer, Tournament } from "@/app/prisma";
+import { Prisma, TournamentTeam, TournamentPlayer, Tournament } from "@/lib/db";
 import { PlayerLink } from "@/components/tournament/PlayerLink";
 
 type TeamWithDetails = TournamentTeam & {
