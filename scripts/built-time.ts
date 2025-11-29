@@ -1,5 +1,4 @@
-// scripts/update-build-time.ts
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@/app/prisma";
 
 // Initialize Prisma Client
 const prisma = new PrismaClient();
