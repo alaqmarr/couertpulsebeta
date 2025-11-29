@@ -1,16 +1,11 @@
-import { Pool } from "pg";
-import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../app/prisma";
+import { PrismaPg } from "@prisma/adapter-pg";
 
-export * from "../app/prisma";
-
-const connectionString = `${process.env.DATABASE_URL}`;
-
-const pool = new Pool({ connectionString });
-const adapter = new PrismaPg(pool);
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL || "",
+});
 
 declare global {
-  // Prevents hot-reload multiple instances in dev
   // eslint-disable-next-line no-var
   var prisma: PrismaClient | undefined;
 }
@@ -26,3 +21,52 @@ export const prisma =
   });
 
 if (process.env.NODE_ENV !== "production") global.prisma = prisma;
+
+// Explicitly export commonly used types to avoid "export *" warning
+export type {
+  // Core Prisma types
+  Prisma,
+  PrismaPromise,
+
+  // Models
+  AppConfig,
+  ClerkUser,
+  User,
+  Team,
+  TeamMember,
+  Session,
+  SessionParticipant,
+  Game,
+  PairStat,
+  SessionPairHistory,
+  SessionPlayerStats,
+  Tournament,
+  TournamentMember,
+  TournamentTeam,
+  TournamentGame,
+  MatchEvent,
+  Stage,
+  Payment,
+  Notification,
+  Activity,
+  CalendarEvent,
+  TournamentPlayer,
+  TournamentPoint,
+  TournamentEnrollment,
+  EmailLog,
+  VerificationToken,
+} from "../app/prisma";
+
+// Export enums
+export {
+  PackageType,
+  Role,
+  WinningTeam,
+  PaymentType,
+  ActivityType,
+  TournamentRole,
+  GameStatus,
+  EventType,
+  EnrollmentStatus,
+  PaymentMode,
+} from "../app/prisma";

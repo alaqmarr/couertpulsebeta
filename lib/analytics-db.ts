@@ -1,13 +1,10 @@
-import { Pool } from "pg";
-import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient as AnalyticsPrismaClient } from "../app/prisma-analytics";
+import { PrismaPg } from "@prisma/adapter-pg";
 
-const connectionString = `${process.env.ANALYTICS_DATABASE_URL}`;
+const adapter = new PrismaPg({
+  connectionString: process.env.ANALYTICS_DATABASE_URL || "",
+});
 
-const pool = new Pool({ connectionString });
-const adapter = new PrismaPg(pool);
-
-// Analytics Database Client
 const globalForAnalyticsPrisma = globalThis as unknown as {
   analyticsDb: AnalyticsPrismaClient | undefined;
 };
