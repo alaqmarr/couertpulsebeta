@@ -1,4 +1,4 @@
-import { PrismaClient as AnalyticsPrismaClient } from "@/prisma/client-analytics";
+import { PrismaClient as AnalyticsPrismaClient } from "../app/prisma-analytics";
 import { seedAchievements } from "@/lib/achievements/checker";
 
 const analyticsDb = new AnalyticsPrismaClient();

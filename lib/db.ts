@@ -1,4 +1,4 @@
-import { PrismaClient } from "@/prisma/client";
+import { PrismaClient } from "../app/prisma";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 const adapter = new PrismaPg({
@@ -22,13 +22,10 @@ export const prisma =
 
 if (process.env.NODE_ENV !== "production") global.prisma = prisma;
 
-// Explicitly export commonly used types to avoid "export *" warning
+// Explicitly export commonly used types
 export type {
-  // Core Prisma types
   Prisma,
   PrismaPromise,
-
-  // Models
   AppConfig,
   ClerkUser,
   User,
@@ -55,7 +52,7 @@ export type {
   TournamentEnrollment,
   EmailLog,
   VerificationToken,
-} from "@/prisma/client";
+} from "../app/prisma";
 
 // Export enums
 export {
@@ -69,4 +66,4 @@ export {
   EventType,
   EnrollmentStatus,
   PaymentMode,
-} from "@/prisma/client";
+} from "../app/prisma";
