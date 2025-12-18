@@ -1,4 +1,4 @@
-import { User } from "@/app/prisma";
+import { User } from "@/lib/db";
 import { FeatureCapability, PLAN_CONFIG } from "@/config/subscription-plans";
 
 /**

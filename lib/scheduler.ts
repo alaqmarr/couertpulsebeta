@@ -1,4 +1,4 @@
-import { TournamentTeam } from "@/app/prisma";
+import { TournamentTeam } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import {
   getPendingEmails,

@@ -90,7 +90,7 @@ export default async function TeamDashboardPage({
                     <Shield className="w-6 h-6 text-primary" /> Squad
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {team.players.map((player) => (
+                    {team.players.map((player: TournamentPlayer) => (
                         <Card key={player.id} className="glass-card hover:bg-white/5 transition-colors">
                             <CardContent className="p-4 flex items-center gap-4">
                                 <Avatar className="w-12 h-12 border border-white/10">
