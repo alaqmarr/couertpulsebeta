@@ -25,7 +25,6 @@ if (process.env.NODE_ENV !== "production") global.prisma = prisma;
 // Explicitly export commonly used types
 export type {
   Prisma,
-  PrismaPromise,
   AppConfig,
   ClerkUser,
   User,
@@ -52,7 +51,7 @@ export type {
   TournamentEnrollment,
   EmailLog,
   VerificationToken,
-} from "@/app/prisma/index";
+} from "@/app/prisma/client";
 
 // Export enums
 export {
