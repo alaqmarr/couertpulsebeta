@@ -1,4 +1,5 @@
 // middleware.ts
+export const preferredRegion = "sin1";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { clerkMiddleware, getAuth } from "@clerk/nextjs/server";

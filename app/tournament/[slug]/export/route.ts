@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+export const preferredRegion = "sin1";
 import { getOrCreateUser } from "@/lib/clerk";
 import { NextRequest, NextResponse } from "next/server";
 import * as XLSX from "xlsx";

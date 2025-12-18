@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+export const preferredRegion = "sin1";
 import { processEmailQueue } from "@/lib/scheduler";
 import { prisma } from "@/lib/db";
 import { syncSessionData } from "@/lib/sync";

@@ -2,7 +2,7 @@
 
 import { useLiveGame } from "@/hooks/useLiveGame";
 import { Button } from "@/components/ui/button";
-import { Loader2, Minus, Plus, Trophy, UserCheck } from "lucide-react";
+import { Loader2, Minus, Plus, Trophy, UserCheck, ArrowLeftRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import GameDetailsModal from "./GameDetailsModal";
@@ -39,10 +39,9 @@ export default function LiveGameCard({
         teamBScore: game.teamBScore,
     });
 
-
-
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showDetails, setShowDetails] = useState(false);
+    const [isSwapped, setIsSwapped] = useState(false);
 
     // Use live data if available, otherwise fall back to Prisma data
     const scoreA = liveData ? liveData.teamAScore : game.teamAScore;
@@ -111,16 +110,16 @@ export default function LiveGameCard({
 
                 {/* Teams & Scores */}
                 <div className="grid grid-cols-3 items-center gap-3 text-sm text-center">
-                    {/* Team A */}
+                    {/* LEFT COLUMN (Team A if normal, Team B if swapped) */}
                     <div
-                        className={`flex flex-col gap-1 ${game.winner === "A"
+                        className={`flex flex-col gap-1 ${(isSwapped ? game.winner === "B" : game.winner === "A")
                             ? "font-bold text-green-700"
-                            : game.winner === "B"
+                            : (isSwapped ? game.winner === "A" : game.winner === "B")
                                 ? "text-red-600"
                                 : ""
                             }`}
                     >
-                        {game.teamAPlayers.map((p) => (
+                        {(isSwapped ? game.teamBPlayers : game.teamAPlayers).map((p) => (
                             <div key={p} className="flex items-center gap-2 justify-end">
                                 <span className="uppercase truncate text-sm">
                                     {getPlayerName(p)}
@@ -133,7 +132,7 @@ export default function LiveGameCard({
                                 )}
                             </div>
                         ))}
-                        {/* Score Controls A */}
+                        {/* Score Controls */}
                         {!game.winner && isOwner && (
                             <div className="flex items-center justify-center gap-2 mt-2">
                                 <Button
@@ -142,47 +141,62 @@ export default function LiveGameCard({
                                     className="h-8 w-8 glass-btn-destructive"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        handleScoreChange("a", -1);
+                                        handleScoreChange(isSwapped ? "b" : "a", -1);
                                     }}
                                 >
                                     <Minus className="h-4 w-4" />
                                 </Button>
-                                <span className="text-2xl font-bold w-10">{scoreA}</span>
+                                <span className="text-2xl font-bold w-10">{isSwapped ? scoreB : scoreA}</span>
                                 <Button
                                     size="icon"
                                     variant="ghost"
                                     className="h-8 w-8 glass-btn-primary" // Using primary (greenish) for plus
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        handleScoreChange("a", 1);
+                                        handleScoreChange(isSwapped ? "b" : "a", 1);
                                     }}
                                 >
                                     <Plus className="h-4 w-4" />
                                 </Button>
                             </div>
                         )}
-                        {/* Read-only Score A */}
+                        {/* Read-only Score */}
                         {(game.winner || !isOwner) && (
-                            <span className="text-2xl font-bold mt-2">{scoreA}</span>
+                            <span className="text-2xl font-bold mt-2">{isSwapped ? scoreB : scoreA}</span>
                         )}
                     </div>
 
-                    {/* VS / Divider */}
-                    <div className="flex flex-col items-center justify-center">
-                        <span className="text-xs text-muted-foreground mb-1">VS</span>
-                        <div className="h-8 w-[1px] bg-border/50"></div>
+                    {/* VS / Divider / Swap Button */}
+                    <div className="flex flex-col items-center justify-center gap-1">
+                        <span className="text-xs text-muted-foreground mb-0.5">VS</span>
+                        {isOwner && !game.winner ? (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 rounded-full hover:bg-muted text-muted-foreground"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setIsSwapped(!isSwapped);
+                                }}
+                                title="Swap Sides"
+                            >
+                                <ArrowLeftRight className="h-3 w-3" />
+                            </Button>
+                        ) : (
+                            <div className="h-8 w-[1px] bg-border/50"></div>
+                        )}
                     </div>
 
-                    {/* Team B */}
+                    {/* RIGHT COLUMN (Team B if normal, Team A if swapped) */}
                     <div
-                        className={`flex flex-col gap-1 ${game.winner === "B"
+                        className={`flex flex-col gap-1 ${(isSwapped ? game.winner === "A" : game.winner === "B")
                             ? "font-bold text-green-700"
-                            : game.winner === "A"
+                            : (isSwapped ? game.winner === "B" : game.winner === "A")
                                 ? "text-red-600 line-through"
                                 : ""
                             }`}
                     >
-                        {game.teamBPlayers.map((p) => (
+                        {(isSwapped ? game.teamAPlayers : game.teamBPlayers).map((p) => (
                             <div key={p} className="flex items-center gap-2 justify-start">
                                 {getMemberAvatar && (
                                     <Avatar className="h-6 w-6">
@@ -195,7 +209,7 @@ export default function LiveGameCard({
                                 </span>
                             </div>
                         ))}
-                        {/* Score Controls B */}
+                        {/* Score Controls */}
                         {!game.winner && isOwner && (
                             <div className="flex items-center justify-center gap-2 mt-2">
                                 <Button
@@ -204,28 +218,28 @@ export default function LiveGameCard({
                                     className="h-8 w-8 glass-btn-destructive"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        handleScoreChange("b", -1);
+                                        handleScoreChange(isSwapped ? "a" : "b", -1);
                                     }}
                                 >
                                     <Minus className="h-4 w-4" />
                                 </Button>
-                                <span className="text-2xl font-bold w-10">{scoreB}</span>
+                                <span className="text-2xl font-bold w-10">{isSwapped ? scoreA : scoreB}</span>
                                 <Button
                                     size="icon"
                                     variant="ghost"
                                     className="h-8 w-8 glass-btn-primary"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        handleScoreChange("b", 1);
+                                        handleScoreChange(isSwapped ? "a" : "b", 1);
                                     }}
                                 >
                                     <Plus className="h-4 w-4" />
                                 </Button>
                             </div>
                         )}
-                        {/* Read-only Score B */}
+                        {/* Read-only Score */}
                         {(game.winner || !isOwner) && (
-                            <span className="text-2xl font-bold mt-2">{scoreB}</span>
+                            <span className="text-2xl font-bold mt-2">{isSwapped ? scoreA : scoreB}</span>
                         )}
                     </div>
                 </div>

@@ -105,10 +105,11 @@ export async function getSessionLeaderboard(sessionId: string) {
       };
     });
 
-    // Sort by Win Rate (desc), then Wins (desc)
+    // Sort by Win Rate (desc), then Wins (desc), then Points Diff (desc)
     leaderboard.sort((a, b) => {
       if (b.winRate !== a.winRate) return b.winRate - a.winRate;
-      return b.wins - a.wins;
+      if (b.wins !== a.wins) return b.wins - a.wins;
+      return b.pointsDiff - a.pointsDiff;
     });
 
     return leaderboard;
@@ -125,19 +126,46 @@ export async function getTeamLeaderboard(teamId: string) {
       include: { games: true },
     });
 
-    const tally = new Map<string, { plays: number; wins: number }>();
+    const tally = new Map<
+      string,
+      {
+        plays: number;
+        wins: number;
+        pointsWon: number;
+        pointsLost: number;
+      }
+    >();
 
     for (const session of sessions) {
       for (const g of session.games) {
+        if (!g.winner) continue; // Skip unfinished games for stats
+
         const all = [...g.teamAPlayers, ...g.teamBPlayers];
         for (const p of all) {
-          const rec = tally.get(p) || { plays: 0, wins: 0 };
+          const rec = tally.get(p) || {
+            plays: 0,
+            wins: 0,
+            pointsWon: 0,
+            pointsLost: 0,
+          };
           rec.plays += 1;
+
+          // Win calculation
           if (
             (g.winner === "A" && g.teamAPlayers.includes(p)) ||
             (g.winner === "B" && g.teamBPlayers.includes(p))
-          )
+          ) {
             rec.wins += 1;
+          }
+
+          // Points calculation
+          const isTeamA = g.teamAPlayers.includes(p);
+          const myScore = isTeamA ? g.teamAScore || 0 : g.teamBScore || 0;
+          const opponentScore = isTeamA ? g.teamBScore || 0 : g.teamAScore || 0;
+
+          rec.pointsWon += myScore;
+          rec.pointsLost += opponentScore;
+
           tally.set(p, rec);
         }
       }
@@ -154,12 +182,22 @@ export async function getTeamLeaderboard(teamId: string) {
         member?.displayName || member?.user?.name || email.split("@")[0];
       const losses = val.plays - val.wins;
       const winRate = val.plays > 0 ? (val.wins / val.plays) * 100 : 0;
-      return { id: member?.id ?? email, name, ...val, losses, winRate };
+      const pointsDiff = val.pointsWon - val.pointsLost;
+      return {
+        id: member?.id ?? email,
+        name,
+        ...val,
+        losses,
+        winRate,
+        pointsDiff,
+      };
     });
 
-    // Sort: first by win rate (descending), then by name (ascending)
+    // Sort: Win Rate (desc) -> Wins (desc) -> Points Diff (desc) -> Name (asc)
     const sortedData = data.sort((a, b) => {
       if (b.winRate !== a.winRate) return b.winRate - a.winRate;
+      if (b.wins !== a.wins) return b.wins - a.wins;
+      if (b.pointsDiff !== a.pointsDiff) return b.pointsDiff - a.pointsDiff;
       return a.name.localeCompare(b.name);
     });
 

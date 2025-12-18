@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+export const preferredRegion = "sin1";
 import { updatePlayerPrivacy } from "@/lib/player-privacy";
 
 export async function POST(request: NextRequest) {

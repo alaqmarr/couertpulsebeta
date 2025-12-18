@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+export const preferredRegion = 'sin1';
 import { AdminActivationBanner } from "@/components/admin/AdminActivationBanner";
 import { getOrCreateUser } from "@/lib/clerk";
 import MainHeader from "@/components/layout/MainHeader";

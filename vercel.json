@@ -4,5 +4,6 @@
       "path": "/api/cron?job=email",
       "schedule": "0 10 * * *"
     }
-  ]
+  ],
+  "regions": ["sin1"]
 }
