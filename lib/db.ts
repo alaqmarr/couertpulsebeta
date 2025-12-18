@@ -52,7 +52,7 @@ export type {
   TournamentEnrollment,
   EmailLog,
   VerificationToken,
-} from "../app/prisma";
+} from "@/app/prisma/index";
 
 // Export enums
 export {
@@ -66,4 +66,4 @@ export {
   EventType,
   EnrollmentStatus,
   PaymentMode,
-} from "../app/prisma";
+} from "@/app/prisma/enums";
