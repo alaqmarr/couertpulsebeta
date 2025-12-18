@@ -1,4 +1,4 @@
-import { PrismaClient as AnalyticsPrismaClient } from "../app/prisma-analytics";
+import { PrismaClient as AnalyticsPrismaClient } from "@/app/prisma-analytics/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 const adapter = new PrismaPg({
