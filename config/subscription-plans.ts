@@ -1,4 +1,4 @@
-import { PackageType } from "@/app/prisma";
+import { PackageType } from "@/lib/db";
 
 export type FeatureCapability =
   | "canSync"

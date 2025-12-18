@@ -1,7 +1,4 @@
-import { PrismaClient } from "@/app/prisma";
-
-// Initialize Prisma Client
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/db";
 
 async function main() {
   const newBuildTime = new Date().toISOString();
@@ -25,6 +22,10 @@ async function main() {
     console.error("Error updating build time:", error);
     process.exit(1); // Exit with an error code
   } finally {
+    // prisma disconnection is handled by the singleton in lib/db potentially,
+    // but in a script we should be explicit if we can.
+    // However, lib/db exports `prisma`.
+    // We can just query and exit.
     await prisma.$disconnect();
   }
 }
